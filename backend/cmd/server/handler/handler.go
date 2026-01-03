@@ -2,12 +2,13 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
+
+	"github.com/zorcal/sbgfit/backend/pkg/httprouter"
 )
 
 func New() http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, "Hello world!")
-	})
+	r := httprouter.New()
+	routes(r)
+	return r
 }
