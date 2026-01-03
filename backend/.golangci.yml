@@ -128,3 +128,8 @@ formatters:
       max-len: 200
       tab-len: 4
       shorten-comments: true
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  fix: true
