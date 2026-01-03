@@ -2,13 +2,20 @@
 package handler
 
 import (
+	"log/slog"
 	"net/http"
 
 	"github.com/zorcal/sbgfit/backend/pkg/httprouter"
 )
 
-func New() http.Handler {
-	r := httprouter.New()
+type Config struct {
+	Log *slog.Logger
+}
+
+func New(cfg Config) http.Handler {
+	r := httprouter.New(
+		loggingMiddleware(cfg.Log),
+	)
 	routes(r)
 	return r
 }

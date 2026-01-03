@@ -49,7 +49,9 @@ func main() {
 func run(ctx context.Context, cfg Config, log *slog.Logger) (retErr error) {
 	log.InfoContext(ctx, "Starting...", "config", cfg)
 
-	handler := handler.New()
+	handler := handler.New(handler.Config{
+		Log: log,
+	})
 
 	srv := http.Server{
 		Addr:         cfg.Web.Addr,

@@ -107,6 +107,13 @@ linters:
             - github.com/zorcal/sbgfit/backend
             - github.com/ardanlabs/conf/v3
             - github.com/lmittmann/tint
+    wrapcheck:
+      ignore-sigs:
+        - fmt.Errorf
+        - errors.New(
+        - errors.Unwrap(
+        - errors.Join(
+        - .Write(
 
 formatters:
   enable:
