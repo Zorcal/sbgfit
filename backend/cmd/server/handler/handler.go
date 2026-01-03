@@ -14,6 +14,7 @@ type Config struct {
 
 func New(cfg Config) http.Handler {
 	r := httprouter.New(
+		traceMiddleware(),
 		loggingMiddleware(cfg.Log),
 	)
 	routes(r)

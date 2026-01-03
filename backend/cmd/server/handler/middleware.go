@@ -1,12 +1,32 @@
 package handler
 
 import (
+	"cmp"
 	"log/slog"
 	"net/http"
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/zorcal/sbgfit/backend/pkg/httprouter"
+	"github.com/zorcal/sbgfit/backend/pkg/slogctx"
+	"github.com/zorcal/sbgfit/backend/pkg/tracectx"
 )
+
+func traceMiddleware() httprouter.Middleware {
+	return func(next httprouter.Handler) httprouter.Handler {
+		return func(w http.ResponseWriter, r *http.Request) error {
+			ctx := r.Context()
+
+			traceparent := cmp.Or(r.Header.Get("Traceparent"), uuid.NewString())
+
+			ctx = tracectx.Set(ctx, traceparent)
+			ctx = slogctx.Attach(ctx, "traceparent", traceparent)
+
+			return next(w, r.WithContext(ctx))
+		}
+	}
+}
 
 func loggingMiddleware(log *slog.Logger) httprouter.Middleware {
 	return func(next httprouter.Handler) httprouter.Handler {
