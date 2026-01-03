@@ -12,6 +12,7 @@ import (
 
 	"github.com/ardanlabs/conf/v3"
 	"github.com/lmittmann/tint"
+	"github.com/zorcal/sbgfit/backend/pkg/slogctx"
 )
 
 // appVersion should be set at build time using -ldflags.
@@ -93,8 +94,12 @@ func run(ctx context.Context, cfg Config, log *slog.Logger) (retErr error) {
 }
 
 func logHandler(env string) slog.Handler {
+	var h slog.Handler
 	if env == "local" {
-		return tint.NewHandler(os.Stdout, nil)
+		h = tint.NewHandler(os.Stdout, nil)
+	} else {
+		h = slog.NewJSONHandler(os.Stdout, nil)
 	}
-	return slog.NewJSONHandler(os.Stdout, nil)
+	h = slogctx.NewHandler(h)
+	return h
 }
