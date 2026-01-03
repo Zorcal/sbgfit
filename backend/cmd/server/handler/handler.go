@@ -16,6 +16,7 @@ func New(cfg Config) http.Handler {
 	r := httprouter.New(
 		traceMiddleware(),
 		loggingMiddleware(cfg.Log),
+		panicRecovery(cfg.Log),
 	)
 	routes(r)
 	return r

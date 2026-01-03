@@ -2,8 +2,10 @@ package handler
 
 import (
 	"cmp"
+	"fmt"
 	"log/slog"
 	"net/http"
+	"runtime/debug"
 	"time"
 
 	"github.com/google/uuid"
@@ -84,5 +86,28 @@ func logLevel(statusCode int) slog.Level {
 		return slog.LevelWarn
 	default:
 		return slog.LevelInfo
+	}
+}
+
+func panicRecovery(log *slog.Logger) httprouter.Middleware {
+	return func(next httprouter.Handler) httprouter.Handler {
+		return func(w http.ResponseWriter, r *http.Request) (err error) {
+			defer func() {
+				if rec := recover(); rec != nil {
+					stack := debug.Stack()
+
+					log.ErrorContext(r.Context(), "Panic recovered",
+						"panic", rec,
+						"stack", string(stack),
+						"method", r.Method,
+						"path", r.URL.Path,
+					)
+
+					err = fmt.Errorf("PANIC: %v", rec)
+				}
+			}()
+
+			return next(w, r)
+		}
 	}
 }
