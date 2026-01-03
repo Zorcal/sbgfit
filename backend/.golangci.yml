@@ -105,3 +105,4 @@ linters:
           allow:
             - $gostd
             - github.com/ardanlabs/conf/v3
+            - github.com/lmittmann/tint

@@ -9,25 +9,13 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"github.com/ardanlabs/conf/v3"
+	"github.com/lmittmann/tint"
 )
 
 // appVersion should be set at build time using -ldflags.
 var appVersion = "dev"
-
-type Config struct {
-	conf.Version
-
-	Web struct {
-		ReadTimeout     time.Duration `conf:"default:5s"`
-		WriteTimeout    time.Duration `conf:"default:10s"`
-		IdleTimeout     time.Duration `conf:"default:120s"`
-		ShutdownTimeout time.Duration `conf:"default:20s"`
-		Addr            string        `conf:"default:127.0.0.1:4250"`
-	}
-}
 
 func main() {
 	ctx := context.Background()
@@ -47,7 +35,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	log := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	log := slog.New(logHandler(cfg.Environment))
 
 	if err := run(ctx, cfg, log); err != nil {
 		log.ErrorContext(ctx, "Run error", "error", err)
@@ -56,12 +44,7 @@ func main() {
 }
 
 func run(ctx context.Context, cfg Config, log *slog.Logger) (retErr error) {
-	strCfg, err := conf.String(&cfg)
-	if err != nil {
-		return fmt.Errorf("generate config for output: %w", err)
-	}
-
-	log.InfoContext(ctx, "Starting...", "config", strCfg)
+	log.InfoContext(ctx, "Starting...", "config", cfg)
 
 	srv := http.Server{
 		Addr: cfg.Web.Addr,
@@ -107,4 +90,11 @@ func run(ctx context.Context, cfg Config, log *slog.Logger) (retErr error) {
 	}
 
 	return nil
+}
+
+func logHandler(env string) slog.Handler {
+	if env == "local" {
+		return tint.NewHandler(os.Stdout, nil)
+	}
+	return slog.NewJSONHandler(os.Stdout, nil)
 }
