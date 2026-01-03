@@ -106,3 +106,25 @@ linters:
             - $gostd
             - github.com/ardanlabs/conf/v3
             - github.com/lmittmann/tint
+
+formatters:
+  enable:
+    - gci
+    - gofumpt
+    - golines
+  settings:
+    gci:
+      sections:
+        - standard
+        - default
+        - prefix(github.com/zorcal/sbgfit/backend)
+        - blank
+        - dot
+        - alias
+        - localmodule
+    gofumpt:
+      extra-rules: true
+    golines:
+      max-len: 200
+      tab-len: 4
+      shorten-comments: true
