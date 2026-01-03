@@ -104,6 +104,7 @@ linters:
           list-mode: "strict"
           allow:
             - $gostd
+            - github.com/zorcal/sbgfit/backend
             - github.com/ardanlabs/conf/v3
             - github.com/lmittmann/tint
 
