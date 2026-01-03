@@ -1,0 +1,107 @@
+version: "2"
+linters:
+  default: none
+  enable:
+    - asciicheck
+    - bidichk
+    - bodyclose
+    - canonicalheader
+    - containedctx
+    - contextcheck
+    - depguard
+    - durationcheck
+    - embeddedstructfieldcheck
+    - errcheck
+    - errchkjson
+    - errname
+    - errorlint
+    - forbidigo
+    - forcetypeassert
+    - gocheckcompilerdirectives
+    - gochecksumtype
+    - gocritic
+    - godoclint
+    - godot
+    - goprintffuncname
+    - gosec
+    - govet
+    - importas
+    - ineffassign
+    - intrange
+    - iotamixing
+    - ireturn
+    - makezero
+    - mirror
+    - misspell
+    - modernize
+    - musttag
+    - nakedret
+    - nilnil
+    - noctx
+    - nosprintfhostport
+    - perfsprint
+    - prealloc
+    - predeclared
+    - reassign
+    - recvcheck
+    - rowserrcheck
+    - sloglint
+    - spancheck
+    - sqlclosecheck
+    - staticcheck
+    - tagalign
+    - tagliatelle
+    - testableexamples
+    - thelper
+    - unconvert
+    - unparam
+    - unused
+    - usestdlibvars
+    - usetesting
+    - whitespace
+    - wrapcheck
+  settings:
+    misspell:
+      # Correct spellings using locale preferences for US or UK.
+      # Setting locale to US will correct the British spelling of 'colour' to 'color'.
+      # Default is to use a neutral variety of English.
+      locale: US
+    nakedret:
+      max-func-lines: 0
+    sloglint:
+      context: "all"
+      msg-style: capitalized
+      key-naming-case: snake
+      forbidden-keys:
+        - time
+        - level
+        - msg
+        - source
+    staticcheck:
+      http-status-code-whitelist: []
+      checks: ["all"]
+    tagliatelle:
+      case:
+        rules:
+          json: camel
+          env: upperSnake
+          envconfig: upperSnake
+    errcheck:
+      check-type-assertions: true
+      check-blank: true
+      # List of functions to exclude from checking, where each entry is a single function to exclude.
+      # See https://github.com/kisielk/errcheck#excluding-functions for details.
+      exclude-functions:
+        - fmt.Fprint
+        - (*net/http.Server).Close
+      verbose: true
+    gosec:
+      excludes:
+        - G104 # Handled by other errcheck
+    depguard:
+      rules:
+        main:
+          list-mode: "strict"
+          allow:
+            - $gostd
+            - github.com/ardanlabs/conf/v3
