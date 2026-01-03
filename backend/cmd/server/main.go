@@ -12,6 +12,8 @@ import (
 
 	"github.com/ardanlabs/conf/v3"
 	"github.com/lmittmann/tint"
+
+	"github.com/zorcal/sbgfit/backend/cmd/server/handler"
 	"github.com/zorcal/sbgfit/backend/pkg/slogctx"
 )
 
@@ -47,11 +49,11 @@ func main() {
 func run(ctx context.Context, cfg Config, log *slog.Logger) (retErr error) {
 	log.InfoContext(ctx, "Starting...", "config", cfg)
 
+	handler := handler.New()
+
 	srv := http.Server{
-		Addr: cfg.Web.Addr,
-		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			fmt.Fprint(w, "Hello world!")
-		}),
+		Addr:         cfg.Web.Addr,
+		Handler:      handler,
 		ReadTimeout:  cfg.Web.ReadTimeout,
 		WriteTimeout: cfg.Web.WriteTimeout,
 		IdleTimeout:  cfg.Web.IdleTimeout,
