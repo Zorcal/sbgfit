@@ -2,6 +2,8 @@ package handler
 
 import (
 	"cmp"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -108,6 +110,38 @@ func panicRecovery(log *slog.Logger) httprouter.Middleware {
 			}()
 
 			return next(w, r)
+		}
+	}
+}
+
+func errorMiddleware(log *slog.Logger) httprouter.Middleware {
+	return func(next httprouter.Handler) httprouter.Handler {
+		return func(w http.ResponseWriter, r *http.Request) error {
+			err := next(w, r)
+			if err == nil {
+				return nil
+			}
+
+			ctx := r.Context()
+
+			var httpErr *httpError
+			if !errors.As(err, &httpErr) {
+				httpErr = &httpError{
+					StatusCode:      http.StatusInternalServerError,
+					ExternalMessage: http.StatusText(http.StatusInternalServerError),
+					InternalErr:     err,
+				}
+			}
+
+			log.ErrorContext(ctx, "Request error", "error", httpErr)
+
+			w.WriteHeader(httpErr.StatusCode)
+
+			if err := json.NewEncoder(w).Encode(httpErr); err != nil {
+				log.ErrorContext(ctx, "Failed to encode error response", "error", err)
+			}
+
+			return nil
 		}
 	}
 }
