@@ -83,6 +83,10 @@ func FromTemplate(t *testing.T, ctx context.Context, tmplName, dbName string) *p
 		t.Fatalf("status check database: %s", err)
 	}
 
+	if err := schema.SeedData(ctx, pool); err != nil {
+		t.Fatalf("seed database: %s", err)
+	}
+
 	return pool
 }
 
