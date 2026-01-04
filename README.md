@@ -15,3 +15,17 @@ When deciding on features, speed and simplicity guide all development choices.
 ## Development Guidelines
 
 All Go development must follow guidelines in [`backend/AGENTS.md`](./backend/AGENTS.md).
+
+## Development Requirements
+
+Add the following to your /etc/hosts for communication with app and docker containers to work correctly:
+
+```sh
+127.0.0.1	sbgfit-postgres
+```
+
+Run:
+
+```sh
+docker compose up -d
+```
