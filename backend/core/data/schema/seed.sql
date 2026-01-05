@@ -1,23 +1,131 @@
 BEGIN;
 
--- Global exercises.
-INSERT INTO sbgfit.exercises (
-    external_id,
-    name,
-    category,
-    equipment_types,
-    primary_muscles,
-    description,
-    instructions,
-    tags
-) VALUES
+-- Seed lookup tables first
+
+INSERT INTO sbgfit.exercise_categories (code, name) VALUES
+('cardio', 'Cardio'),
+('strength', 'Strength'),
+('plyometric', 'Plyometric')
+ON CONFLICT (code) DO UPDATE SET name = EXCLUDED.name;
+
+INSERT INTO sbgfit.equipment_types (code, name) VALUES
+('bodyweight', 'Bodyweight'),
+('kettlebell', 'Kettlebell'),
+('rowing-machine', 'Rowing Machine'),
+('ski-erg', 'Ski Erg'),
+('medicine-ball', 'Medicine Ball'),
+('dumbbells', 'Dumbbells'),
+('barbell', 'Barbell'),
+('sled', 'Sled'),
+('box', 'Box'),
+('jump-rope', 'Jump Rope'),
+('assault-bike', 'Assault Bike')
+ON CONFLICT (code) DO UPDATE SET name = EXCLUDED.name;
+
+INSERT INTO sbgfit.primary_muscles (code, name) VALUES
+('chest', 'Chest'),
+('back', 'Back'),
+('shoulders', 'Shoulders'),
+('biceps', 'Biceps'),
+('triceps', 'Triceps'),
+('forearms', 'Forearms'),
+('core', 'Core'),
+('abs', 'Abs'),
+('obliques', 'Obliques'),
+('glutes', 'Glutes'),
+('quads', 'Quads'),
+('hamstrings', 'Hamstrings'),
+('calves', 'Calves'),
+('legs', 'Legs'),
+('full-body', 'Full Body'),
+('grip', 'Grip')
+ON CONFLICT (code) DO UPDATE SET name = EXCLUDED.name;
+
+INSERT INTO sbgfit.exercise_tags (code, name) VALUES
+('crossfit', 'CrossFit'),
+('hyrox', 'Hyrox'),
+('beginner-friendly', 'Beginner Friendly'),
+('advanced', 'Advanced'),
+('conditioning', 'Conditioning'),
+('strength-endurance', 'Strength Endurance'),
+('power', 'Power'),
+('core', 'Core'),
+('functional', 'Functional'),
+('competition', 'Competition'),
+('plyometric', 'Plyometric')
+ON CONFLICT (code) DO UPDATE SET name = EXCLUDED.name;
+
+-- Helper function to insert exercise with all relationships
+CREATE OR REPLACE FUNCTION insert_exercise(
+    p_external_id UUID,
+    p_name TEXT,
+    p_category_code TEXT,
+    p_description TEXT,
+    p_instructions TEXT[],
+    p_equipment_codes TEXT[] DEFAULT ARRAY[]::TEXT[],
+    p_muscle_codes TEXT[] DEFAULT ARRAY[]::TEXT[],
+    p_tag_codes TEXT[] DEFAULT ARRAY[]::TEXT[]
+) RETURNS INTEGER AS $$
+DECLARE
+    current_exercise_id INTEGER;
+    equipment_code TEXT;
+    muscle_code TEXT;
+    tag_code TEXT;
+BEGIN
+    -- Insert or update main exercise
+    INSERT INTO sbgfit.exercises (external_id, name, category_id, description, instructions)
+    VALUES (
+        p_external_id,
+        p_name,
+        (SELECT id FROM sbgfit.exercise_categories WHERE code = p_category_code),
+        p_description,
+        p_instructions
+    )
+    ON CONFLICT (external_id) DO UPDATE SET
+        name = EXCLUDED.name,
+        category_id = EXCLUDED.category_id,
+        description = EXCLUDED.description,
+        instructions = EXCLUDED.instructions,
+        updated_at = CURRENT_TIMESTAMP
+    RETURNING id INTO current_exercise_id;
+
+    -- Replace all relationships (delete existing, insert new)
+    DELETE FROM sbgfit.exercise_equipment WHERE exercise_id = current_exercise_id;
+    DELETE FROM sbgfit.exercise_primary_muscles WHERE exercise_id = current_exercise_id;  
+    DELETE FROM sbgfit.exercise_exercise_tags WHERE exercise_id = current_exercise_id;
+
+    -- Insert equipment relationships
+    FOREACH equipment_code IN ARRAY p_equipment_codes
+    LOOP
+        INSERT INTO sbgfit.exercise_equipment (exercise_id, equipment_type_id)
+        VALUES (current_exercise_id, (SELECT id FROM sbgfit.equipment_types WHERE code = equipment_code));
+    END LOOP;
+
+    -- Insert muscle relationships
+    FOREACH muscle_code IN ARRAY p_muscle_codes
+    LOOP
+        INSERT INTO sbgfit.exercise_primary_muscles (exercise_id, primary_muscle_id)
+        VALUES (current_exercise_id, (SELECT id FROM sbgfit.primary_muscles WHERE code = muscle_code));
+    END LOOP;
+
+    -- Insert tag relationships
+    FOREACH tag_code IN ARRAY p_tag_codes
+    LOOP
+        INSERT INTO sbgfit.exercise_exercise_tags (exercise_id, exercise_tag_id)
+        VALUES (current_exercise_id, (SELECT id FROM sbgfit.exercise_tags WHERE code = tag_code));
+    END LOOP;
+
+    RETURN current_exercise_id;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Global exercises using helper function
+
 -- Burpees
-(
+SELECT insert_exercise(
     '01234567-89ab-cdef-0123-456789abcdef',
     'Burpees',
     'cardio',
-    ARRAY['bodyweight']::exercise_equipment[],
-    ARRAY['full-body']::primary_muscle[],
     'From standing, squat down, jump back to plank, do a push-up, jump feet back to squat, then jump up with arms overhead',
     ARRAY[
         'Start standing',
@@ -27,16 +135,16 @@ INSERT INTO sbgfit.exercises (
         'Jump feet to squat',
         'Jump up arms overhead'
     ],
-    ARRAY['crossfit', 'hyrox', 'conditioning', 'functional', 'competition']::exercise_tag[]
-),
+    ARRAY['bodyweight'],
+    ARRAY['full-body'],
+    ARRAY['crossfit', 'hyrox', 'conditioning', 'functional', 'competition']
+);
 
 -- Kettlebell Swings
-(
+SELECT insert_exercise(
     '11111111-1111-1111-1111-111111111111',
     'Kettlebell Swings',
     'strength',
-    ARRAY['kettlebell']::exercise_equipment[],
-    ARRAY['glutes', 'hamstrings', 'core']::primary_muscle[],
     'Hip-hinge movement swinging kettlebell from between legs to chest height',
     ARRAY[
         'Stand with kettlebell',
@@ -45,16 +153,16 @@ INSERT INTO sbgfit.exercises (
         'Let bell swing back',
         'Repeat motion'
     ],
-    ARRAY['crossfit', 'power', 'functional']::exercise_tag[]
-),
+    ARRAY['kettlebell'],
+    ARRAY['glutes', 'hamstrings', 'core'],
+    ARRAY['crossfit', 'power', 'functional']
+);
 
 -- Rowing
-(
+SELECT insert_exercise(
     '22222222-2222-2222-2222-222222222222',
     'Rowing',
     'cardio',
-    ARRAY['rowing-machine']::exercise_equipment[],
-    ARRAY['back', 'legs', 'core']::primary_muscle[],
     'Full-body cardio movement on rowing machine',
     ARRAY[
         'Sit on machine feet strapped',
@@ -63,16 +171,16 @@ INSERT INTO sbgfit.exercises (
         'Pull to chest',
         'Reverse movement'
     ],
-    ARRAY['crossfit', 'hyrox', 'conditioning', 'core']::exercise_tag[]
-),
+    ARRAY['rowing-machine'],
+    ARRAY['back', 'legs', 'core'],
+    ARRAY['crossfit', 'hyrox', 'conditioning', 'core']
+);
 
 -- Ski Erg
-(
+SELECT insert_exercise(
     '33333333-3333-3333-3333-333333333333',
     'Ski Erg',
     'cardio',
-    ARRAY['ski-erg']::exercise_equipment[],
-    ARRAY['shoulders', 'core', 'legs']::primary_muscle[],
     'Upper body cardio movement mimicking cross-country skiing',
     ARRAY[
         'Stand feet hip-width',
@@ -81,16 +189,16 @@ INSERT INTO sbgfit.exercises (
         'Return overhead',
         'Maintain rhythm'
     ],
-    ARRAY['crossfit', 'hyrox', 'conditioning', 'core']::exercise_tag[]
-),
+    ARRAY['ski-erg'],
+    ARRAY['shoulders', 'core', 'legs'],
+    ARRAY['crossfit', 'hyrox', 'conditioning', 'core']
+);
 
 -- Wall Balls
-(
+SELECT insert_exercise(
     '44444444-4444-4444-4444-444444444444',
     'Wall Balls',
     'strength',
-    ARRAY['medicine-ball']::exercise_equipment[],
-    ARRAY['legs', 'shoulders', 'core']::primary_muscle[],
     'Squat and throw medicine ball to target on wall',
     ARRAY[
         'Hold ball at chest',
@@ -99,16 +207,16 @@ INSERT INTO sbgfit.exercises (
         'Catch ball squat again',
         'Repeat continuously'
     ],
-    ARRAY['crossfit', 'power', 'functional']::exercise_tag[]
-),
+    ARRAY['medicine-ball'],
+    ARRAY['legs', 'shoulders', 'core'],
+    ARRAY['crossfit', 'power', 'functional']
+);
 
 -- Farmers Walk
-(
+SELECT insert_exercise(
     '55555555-5555-5555-5555-555555555555',
     'Farmers Walk',
     'strength',
-    ARRAY['dumbbells']::exercise_equipment[],
-    ARRAY['grip', 'core', 'legs']::primary_muscle[],
     'Walk while carrying heavy weights in each hand',
     ARRAY[
         'Pick up weights',
@@ -117,16 +225,16 @@ INSERT INTO sbgfit.exercises (
         'Keep core tight',
         'Set down safely'
     ],
-    ARRAY['hyrox', 'strength-endurance', 'functional']::exercise_tag[]
-),
+    ARRAY['dumbbells'],
+    ARRAY['grip', 'core', 'legs'],
+    ARRAY['hyrox', 'strength-endurance', 'functional']
+);
 
 -- Sled Push
-(
+SELECT insert_exercise(
     '66666666-6666-6666-6666-666666666666',
     'Sled Push',
     'strength',
-    ARRAY['sled']::exercise_equipment[],
-    ARRAY['legs', 'glutes', 'core']::primary_muscle[],
     'Push weighted sled across floor',
     ARRAY[
         'Hands on handles',
@@ -135,16 +243,16 @@ INSERT INTO sbgfit.exercises (
         'Maintain pace',
         'Keep core engaged'
     ],
-    ARRAY['hyrox', 'strength-endurance', 'functional']::exercise_tag[]
-),
+    ARRAY['sled'],
+    ARRAY['legs', 'glutes', 'core'],
+    ARRAY['hyrox', 'strength-endurance', 'functional']
+);
 
 -- Sled Pull
-(
+SELECT insert_exercise(
     '77777777-7777-7777-7777-777777777777',
     'Sled Pull',
     'strength',
-    ARRAY['sled']::exercise_equipment[],
-    ARRAY['back', 'biceps', 'core']::primary_muscle[],
     'Pull weighted sled toward you',
     ARRAY[
         'Grab rope or handles',
@@ -153,16 +261,16 @@ INSERT INTO sbgfit.exercises (
         'Reset position',
         'Maintain rhythm'
     ],
-    ARRAY['hyrox', 'strength-endurance', 'functional']::exercise_tag[]
-),
+    ARRAY['sled'],
+    ARRAY['back', 'biceps', 'core'],
+    ARRAY['hyrox', 'strength-endurance', 'functional']
+);
 
 -- Box Jumps
-(
+SELECT insert_exercise(
     '88888888-8888-8888-8888-888888888888',
     'Box Jumps',
     'plyometric',
-    ARRAY['box']::exercise_equipment[],
-    ARRAY['legs', 'glutes']::primary_muscle[],
     'Jump onto elevated box or platform',
     ARRAY[
         'Stand in front of box',
@@ -171,16 +279,16 @@ INSERT INTO sbgfit.exercises (
         'Stand upright on box',
         'Step down safely'
     ],
-    ARRAY['crossfit', 'power', 'plyometric']::exercise_tag[]
-),
+    ARRAY['box'],
+    ARRAY['legs', 'glutes'],
+    ARRAY['crossfit', 'power', 'plyometric']
+);
 
 -- Lunges
-(
+SELECT insert_exercise(
     '99999999-9999-9999-9999-999999999999',
     'Lunges',
     'strength',
-    ARRAY['bodyweight']::exercise_equipment[],
-    ARRAY['legs', 'glutes']::primary_muscle[],
     'Single-leg strength movement stepping forward into lunge position',
     ARRAY[
         'Stand feet hip-width',
@@ -189,16 +297,16 @@ INSERT INTO sbgfit.exercises (
         'Push through front heel',
         'Alternate or complete side'
     ],
-    ARRAY['crossfit', 'hyrox', 'beginner-friendly', 'functional']::exercise_tag[]
-),
+    ARRAY['bodyweight'],
+    ARRAY['legs', 'glutes'],
+    ARRAY['crossfit', 'hyrox', 'beginner-friendly', 'functional']
+);
 
 -- Pull-ups
-(
+SELECT insert_exercise(
     'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
     'Pull-ups',
     'strength',
-    ARRAY['bodyweight']::exercise_equipment[],
-    ARRAY['back', 'biceps']::primary_muscle[],
     'Hanging from a bar and pulling body up until chin clears the bar',
     ARRAY[
         'Hang from pull-up bar',
@@ -207,16 +315,16 @@ INSERT INTO sbgfit.exercises (
         'Lower with control',
         'Repeat'
     ],
-    ARRAY['crossfit', 'functional', 'beginner-friendly']::exercise_tag[]
-),
+    ARRAY['bodyweight'],
+    ARRAY['back', 'biceps'],
+    ARRAY['crossfit', 'functional', 'beginner-friendly']
+);
 
 -- Push-ups
-(
+SELECT insert_exercise(
     'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
     'Push-ups',
     'strength',
-    ARRAY['bodyweight']::exercise_equipment[],
-    ARRAY['chest', 'shoulders', 'triceps']::primary_muscle[],
     'Classic bodyweight exercise targeting chest, shoulders, and triceps',
     ARRAY[
         'Start in plank position',
@@ -225,16 +333,16 @@ INSERT INTO sbgfit.exercises (
         'Keep body straight',
         'Repeat'
     ],
-    ARRAY['crossfit', 'beginner-friendly', 'functional']::exercise_tag[]
-),
+    ARRAY['bodyweight'],
+    ARRAY['chest', 'shoulders', 'triceps'],
+    ARRAY['crossfit', 'beginner-friendly', 'functional']
+);
 
 -- Dumbbell Deadlifts
-(
+SELECT insert_exercise(
     'cccccccc-cccc-cccc-cccc-cccccccccccc',
     'Dumbbell Deadlifts',
     'strength',
-    ARRAY['dumbbells']::exercise_equipment[],
-    ARRAY['back', 'glutes', 'hamstrings']::primary_muscle[],
     'Hip hinge movement lifting dumbbells from ground to standing position',
     ARRAY[
         'Stand with feet hip-width',
@@ -243,16 +351,16 @@ INSERT INTO sbgfit.exercises (
         'Drive hips forward',
         'Stand tall'
     ],
-    ARRAY['crossfit', 'functional', 'strength-endurance']::exercise_tag[]
-),
+    ARRAY['dumbbells'],
+    ARRAY['back', 'glutes', 'hamstrings'],
+    ARRAY['crossfit', 'functional', 'strength-endurance']
+);
 
 -- Air Squats
-(
+SELECT insert_exercise(
     'dddddddd-dddd-dddd-dddd-dddddddddddd',
     'Air Squats',
     'strength',
-    ARRAY['bodyweight']::exercise_equipment[],
-    ARRAY['legs', 'glutes']::primary_muscle[],
     'Bodyweight squat focusing on proper hip and knee movement',
     ARRAY[
         'Stand with feet shoulder-width',
@@ -261,16 +369,16 @@ INSERT INTO sbgfit.exercises (
         'Drive through heels',
         'Return to standing'
     ],
-    ARRAY['crossfit', 'beginner-friendly', 'functional']::exercise_tag[]
-),
+    ARRAY['bodyweight'],
+    ARRAY['legs', 'glutes'],
+    ARRAY['crossfit', 'beginner-friendly', 'functional']
+);
 
 -- Dumbbell Thrusters
-(
+SELECT insert_exercise(
     'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee',
     'Dumbbell Thrusters',
     'strength',
-    ARRAY['dumbbells']::exercise_equipment[],
-    ARRAY['legs', 'shoulders', 'core']::primary_muscle[],
     'Combination squat to overhead press with dumbbells',
     ARRAY[
         'Hold weights at shoulders',
@@ -279,16 +387,16 @@ INSERT INTO sbgfit.exercises (
         'Press weights overhead',
         'Lower to shoulders'
     ],
-    ARRAY['crossfit', 'functional', 'conditioning']::exercise_tag[]
-),
+    ARRAY['dumbbells'],
+    ARRAY['legs', 'shoulders', 'core'],
+    ARRAY['crossfit', 'functional', 'conditioning']
+);
 
 -- Double Unders
-(
+SELECT insert_exercise(
     'ffffffff-ffff-ffff-ffff-ffffffffffff',
     'Double Unders',
     'cardio',
-    ARRAY['jump-rope']::exercise_equipment[],
-    ARRAY['legs', 'core']::primary_muscle[],
     'Jump rope where rope passes under feet twice per jump',
     ARRAY[
         'Hold rope handles',
@@ -297,16 +405,16 @@ INSERT INTO sbgfit.exercises (
         'Land on balls of feet',
         'Keep rhythm consistent'
     ],
-    ARRAY['crossfit', 'conditioning', 'advanced']::exercise_tag[]
-),
+    ARRAY['jump-rope'],
+    ARRAY['legs', 'core'],
+    ARRAY['crossfit', 'conditioning', 'advanced']
+);
 
 -- Mountain Climbers
-(
+SELECT insert_exercise(
     '10101010-1010-1010-1010-101010101010',
     'Mountain Climbers',
     'cardio',
-    ARRAY['bodyweight']::exercise_equipment[],
-    ARRAY['core', 'legs']::primary_muscle[],
     'Dynamic plank position with alternating knee drives',
     ARRAY[
         'Start in plank position',
@@ -315,16 +423,16 @@ INSERT INTO sbgfit.exercises (
         'Keep hips level',
         'Maintain fast pace'
     ],
-    ARRAY['crossfit', 'conditioning', 'core']::exercise_tag[]
-),
+    ARRAY['bodyweight'],
+    ARRAY['core', 'legs'],
+    ARRAY['crossfit', 'conditioning', 'core']
+);
 
 -- Turkish Get-ups
-(
+SELECT insert_exercise(
     '11111111-2222-3333-4444-555555555555',
     'Turkish Get-ups',
     'strength',
-    ARRAY['kettlebell']::exercise_equipment[],
-    ARRAY['core', 'shoulders', 'full-body']::primary_muscle[],
     'Complex movement from lying to standing while holding weight overhead',
     ARRAY[
         'Lie on back with weight up',
@@ -333,16 +441,16 @@ INSERT INTO sbgfit.exercises (
         'Bridge hips up',
         'Stand up slowly'
     ],
-    ARRAY['functional', 'advanced', 'core']::exercise_tag[]
-),
+    ARRAY['kettlebell'],
+    ARRAY['core', 'shoulders', 'full-body'],
+    ARRAY['functional', 'advanced', 'core']
+);
 
 -- Dumbbell Bench Press
-(
+SELECT insert_exercise(
     '22222222-3333-4444-5555-666666666666',
     'Dumbbell Bench Press',
     'strength',
-    ARRAY['dumbbells']::exercise_equipment[],
-    ARRAY['chest', 'shoulders', 'triceps']::primary_muscle[],
     'Upper body pressing movement with dumbbells for chest development',
     ARRAY[
         'Lie on bench',
@@ -351,16 +459,16 @@ INSERT INTO sbgfit.exercises (
         'Keep back flat',
         'Control the weight'
     ],
-    ARRAY['functional', 'strength-endurance']::exercise_tag[]
-),
+    ARRAY['dumbbells'],
+    ARRAY['chest', 'shoulders', 'triceps'],
+    ARRAY['functional', 'strength-endurance']
+);
 
 -- Dumbbell Bent-over Rows
-(
+SELECT insert_exercise(
     '33333333-4444-5555-6666-777777777777',
     'Dumbbell Bent-over Rows',
     'strength',
-    ARRAY['dumbbells']::exercise_equipment[],
-    ARRAY['back', 'biceps']::primary_muscle[],
     'Pulling movement with dumbbells targeting back muscles and posterior chain',
     ARRAY[
         'Hinge at hips',
@@ -369,16 +477,16 @@ INSERT INTO sbgfit.exercises (
         'Squeeze shoulder blades',
         'Lower with control'
     ],
-    ARRAY['functional', 'strength-endurance']::exercise_tag[]
-),
+    ARRAY['dumbbells'],
+    ARRAY['back', 'biceps'],
+    ARRAY['functional', 'strength-endurance']
+);
 
 -- Dumbbell Overhead Press
-(
+SELECT insert_exercise(
     '44444444-5555-6666-7777-888888888888',
     'Dumbbell Overhead Press',
     'strength',
-    ARRAY['dumbbells']::exercise_equipment[],
-    ARRAY['shoulders', 'triceps', 'core']::primary_muscle[],
     'Pressing dumbbells overhead while standing',
     ARRAY[
         'Hold weights at shoulders',
@@ -387,16 +495,16 @@ INSERT INTO sbgfit.exercises (
         'Lock out arms',
         'Lower with control'
     ],
-    ARRAY['crossfit', 'functional', 'strength-endurance']::exercise_tag[]
-),
+    ARRAY['dumbbells'],
+    ARRAY['shoulders', 'triceps', 'core'],
+    ARRAY['crossfit', 'functional', 'strength-endurance']
+);
 
 -- Russian Twists
-(
+SELECT insert_exercise(
     '55555555-6666-7777-8888-999999999999',
     'Russian Twists',
     'strength',
-    ARRAY['medicine-ball']::exercise_equipment[],
-    ARRAY['core', 'obliques']::primary_muscle[],
     'Rotational core exercise targeting obliques',
     ARRAY[
         'Sit with knees bent',
@@ -405,16 +513,16 @@ INSERT INTO sbgfit.exercises (
         'Touch ball to ground',
         'Keep feet off ground'
     ],
-    ARRAY['core', 'functional']::exercise_tag[]
-),
+    ARRAY['medicine-ball'],
+    ARRAY['core', 'obliques'],
+    ARRAY['core', 'functional']
+);
 
 -- Plank
-(
+SELECT insert_exercise(
     '66666666-7777-8888-9999-aaaaaaaaaaaa',
     'Plank',
     'strength',
-    ARRAY['bodyweight']::exercise_equipment[],
-    ARRAY['core', 'abs']::primary_muscle[],
     'Isometric hold strengthening core and stabilizer muscles',
     ARRAY[
         'Start in push-up position',
@@ -423,16 +531,16 @@ INSERT INTO sbgfit.exercises (
         'Engage core',
         'Hold position'
     ],
-    ARRAY['beginner-friendly', 'core', 'functional']::exercise_tag[]
-),
+    ARRAY['bodyweight'],
+    ARRAY['core', 'abs'],
+    ARRAY['beginner-friendly', 'core', 'functional']
+);
 
 -- Dips
-(
+SELECT insert_exercise(
     '77777777-8888-9999-aaaa-bbbbbbbbbbbb',
     'Dips',
     'strength',
-    ARRAY['bodyweight']::exercise_equipment[],
-    ARRAY['triceps', 'chest', 'shoulders']::primary_muscle[],
     'Bodyweight exercise targeting triceps and chest',
     ARRAY[
         'Support body on parallel bars',
@@ -441,16 +549,16 @@ INSERT INTO sbgfit.exercises (
         'Keep body upright',
         'Control the movement'
     ],
-    ARRAY['functional', 'strength-endurance']::exercise_tag[]
-),
+    ARRAY['bodyweight'],
+    ARRAY['triceps', 'chest', 'shoulders'],
+    ARRAY['functional', 'strength-endurance']
+);
 
--- High-intensity Interval Running
-(
+-- Running
+SELECT insert_exercise(
     '88888888-9999-aaaa-bbbb-cccccccccccc',
     'Running',
     'cardio',
-    ARRAY['bodyweight']::exercise_equipment[],
-    ARRAY['legs', 'core']::primary_muscle[],
     'Running at various intensities for cardiovascular conditioning',
     ARRAY[
         'Maintain proper running form',
@@ -459,16 +567,16 @@ INSERT INTO sbgfit.exercises (
         'Breathe rhythmically',
         'Vary pace as needed'
     ],
-    ARRAY['hyrox', 'conditioning', 'beginner-friendly']::exercise_tag[]
-),
+    ARRAY['bodyweight'],
+    ARRAY['legs', 'core'],
+    ARRAY['hyrox', 'conditioning', 'beginner-friendly']
+);
 
 -- Sandbag Carry
-(
+SELECT insert_exercise(
     '99999999-aaaa-bbbb-cccc-dddddddddddd',
     'Sandbag Carry',
     'strength',
-    ARRAY['sled']::exercise_equipment[],
-    ARRAY['core', 'legs', 'grip']::primary_muscle[],
     'Carrying heavy sandbag for distance or time',
     ARRAY[
         'Pick up sandbag',
@@ -477,16 +585,16 @@ INSERT INTO sbgfit.exercises (
         'Keep core engaged',
         'Set down safely'
     ],
-    ARRAY['hyrox', 'functional', 'strength-endurance']::exercise_tag[]
-),
+    ARRAY['sled'],
+    ARRAY['core', 'legs', 'grip'],
+    ARRAY['hyrox', 'functional', 'strength-endurance']
+);
 
 -- Barbell Back Squat
-(
+SELECT insert_exercise(
     'b0000000-0000-0000-0000-000000000001',
     'Barbell Back Squat',
     'strength',
-    ARRAY['barbell']::exercise_equipment[],
-    ARRAY['legs', 'glutes', 'core']::primary_muscle[],
     'Fundamental squatting movement with barbell on back',
     ARRAY[
         'Position barbell on upper back',
@@ -495,16 +603,16 @@ INSERT INTO sbgfit.exercises (
         'Drive through heels to stand',
         'Keep chest up throughout'
     ],
-    ARRAY['crossfit', 'functional', 'strength-endurance']::exercise_tag[]
-),
+    ARRAY['barbell'],
+    ARRAY['legs', 'glutes', 'core'],
+    ARRAY['crossfit', 'functional', 'strength-endurance']
+);
 
 -- Barbell Deadlift
-(
+SELECT insert_exercise(
     'b0000000-0000-0000-0000-000000000002',
     'Barbell Deadlift',
     'strength',
-    ARRAY['barbell']::exercise_equipment[],
-    ARRAY['back', 'glutes', 'hamstrings', 'grip']::primary_muscle[],
     'Hip hinge movement lifting barbell from ground to standing',
     ARRAY[
         'Stand with feet hip-width',
@@ -513,16 +621,16 @@ INSERT INTO sbgfit.exercises (
         'Drive through heels and hips',
         'Stand tall with shoulders back'
     ],
-    ARRAY['crossfit', 'functional', 'strength-endurance']::exercise_tag[]
-),
+    ARRAY['barbell'],
+    ARRAY['back', 'glutes', 'hamstrings', 'grip'],
+    ARRAY['crossfit', 'functional', 'strength-endurance']
+);
 
 -- Barbell Bench Press
-(
+SELECT insert_exercise(
     'b0000000-0000-0000-0000-000000000003',
     'Barbell Bench Press',
     'strength',
-    ARRAY['barbell']::exercise_equipment[],
-    ARRAY['chest', 'shoulders', 'triceps']::primary_muscle[],
     'Classic upper body pressing movement with barbell',
     ARRAY[
         'Lie on bench with barbell racked',
@@ -531,16 +639,16 @@ INSERT INTO sbgfit.exercises (
         'Press bar straight up',
         'Lock out arms at top'
     ],
-    ARRAY['functional', 'strength-endurance']::exercise_tag[]
-),
+    ARRAY['barbell'],
+    ARRAY['chest', 'shoulders', 'triceps'],
+    ARRAY['functional', 'strength-endurance']
+);
 
 -- Barbell Thrusters
-(
+SELECT insert_exercise(
     'b0000000-0000-0000-0000-000000000004',
     'Barbell Thrusters',
     'strength',
-    ARRAY['barbell']::exercise_equipment[],
-    ARRAY['legs', 'shoulders', 'core', 'full-body']::primary_muscle[],
     'Combination front squat to overhead press with barbell',
     ARRAY[
         'Hold barbell in front rack position',
@@ -549,16 +657,16 @@ INSERT INTO sbgfit.exercises (
         'Press barbell overhead',
         'Lower to front rack position'
     ],
-    ARRAY['crossfit', 'functional', 'conditioning']::exercise_tag[]
-),
+    ARRAY['barbell'],
+    ARRAY['legs', 'shoulders', 'core', 'full-body'],
+    ARRAY['crossfit', 'functional', 'conditioning']
+);
 
 -- Barbell Bent-over Rows
-(
+SELECT insert_exercise(
     'b0000000-0000-0000-0000-000000000005',
     'Barbell Bent-over Rows',
     'strength',
-    ARRAY['barbell']::exercise_equipment[],
-    ARRAY['back', 'biceps', 'core']::primary_muscle[],
     'Pulling movement with barbell targeting back muscles',
     ARRAY[
         'Hinge at hips holding barbell',
@@ -567,16 +675,16 @@ INSERT INTO sbgfit.exercises (
         'Squeeze shoulder blades together',
         'Lower with control'
     ],
-    ARRAY['functional', 'strength-endurance']::exercise_tag[]
-),
+    ARRAY['barbell'],
+    ARRAY['back', 'biceps', 'core'],
+    ARRAY['functional', 'strength-endurance']
+);
 
 -- Barbell Overhead Press
-(
+SELECT insert_exercise(
     'b0000000-0000-0000-0000-000000000006',
     'Barbell Overhead Press',
     'strength',
-    ARRAY['barbell']::exercise_equipment[],
-    ARRAY['shoulders', 'triceps', 'core']::primary_muscle[],
     'Standing overhead press with barbell',
     ARRAY[
         'Hold barbell at shoulder height',
@@ -585,16 +693,16 @@ INSERT INTO sbgfit.exercises (
         'Press barbell straight overhead',
         'Lower to starting position'
     ],
-    ARRAY['crossfit', 'functional', 'strength-endurance']::exercise_tag[]
-),
+    ARRAY['barbell'],
+    ARRAY['shoulders', 'triceps', 'core'],
+    ARRAY['crossfit', 'functional', 'strength-endurance']
+);
 
 -- Clean and Jerk
-(
+SELECT insert_exercise(
     'b0000000-0000-0000-0000-000000000007',
     'Clean and Jerk',
     'strength',
-    ARRAY['barbell']::exercise_equipment[],
-    ARRAY['full-body', 'legs', 'shoulders', 'back']::primary_muscle[],
     'Olympic weightlifting movement from ground to overhead',
     ARRAY[
         'Deadlift barbell to hips',
@@ -603,16 +711,16 @@ INSERT INTO sbgfit.exercises (
         'Dip and drive to press overhead',
         'Lock out arms and stabilize'
     ],
-    ARRAY['crossfit', 'advanced', 'power', 'competition']::exercise_tag[]
-),
+    ARRAY['barbell'],
+    ARRAY['full-body', 'legs', 'shoulders', 'back'],
+    ARRAY['crossfit', 'advanced', 'power', 'competition']
+);
 
 -- Barbell Front Squat
-(
+SELECT insert_exercise(
     'b0000000-0000-0000-0000-000000000008',
     'Barbell Front Squat',
     'strength',
-    ARRAY['barbell']::exercise_equipment[],
-    ARRAY['legs', 'glutes', 'core']::primary_muscle[],
     'Squat with barbell held in front rack position',
     ARRAY[
         'Position barbell in front rack',
@@ -621,16 +729,16 @@ INSERT INTO sbgfit.exercises (
         'Drive through heels to stand',
         'Maintain upright torso'
     ],
-    ARRAY['crossfit', 'functional', 'advanced']::exercise_tag[]
-),
+    ARRAY['barbell'],
+    ARRAY['legs', 'glutes', 'core'],
+    ARRAY['crossfit', 'functional', 'advanced']
+);
 
 -- Assault Bike
-(
+SELECT insert_exercise(
     'a5000000-0000-0000-0000-000000000001',
     'Assault Bike',
     'cardio',
-    ARRAY['assault-bike']::exercise_equipment[],
-    ARRAY['legs', 'core', 'full-body']::primary_muscle[],
     'High-intensity cardio using air resistance bike with moving handles',
     ARRAY[
         'Sit on bike with feet on pedals',
@@ -639,17 +747,12 @@ INSERT INTO sbgfit.exercises (
         'Pedal with legs simultaneously',
         'Maintain steady breathing'
     ],
-    ARRAY['crossfit', 'hyrox', 'conditioning', 'advanced']::exercise_tag[]
-)
+    ARRAY['assault-bike'],
+    ARRAY['legs', 'core', 'full-body'],
+    ARRAY['crossfit', 'hyrox', 'conditioning', 'advanced']
+);
 
-ON CONFLICT (external_id) DO UPDATE SET
-    name = EXCLUDED.name,
-    category = EXCLUDED.category,
-    equipment_types = EXCLUDED.equipment_types,
-    primary_muscles = EXCLUDED.primary_muscles,
-    description = EXCLUDED.description,
-    instructions = EXCLUDED.instructions,
-    tags = EXCLUDED.tags,
-    updated_at = CURRENT_TIMESTAMP;
+-- Clean up helper function
+DROP FUNCTION insert_exercise;
 
 COMMIT;
