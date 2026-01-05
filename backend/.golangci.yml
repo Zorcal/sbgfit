@@ -94,6 +94,7 @@ linters:
       exclude-functions:
         - fmt.Fprint
         - (*net/http.Server).Close
+        - (*github.com/jackc/pgx/v5/pgxpool.Pool).Query
       verbose: true
     gosec:
       excludes:
@@ -108,6 +109,7 @@ linters:
             - github.com/ardanlabs/conf/v3
             - github.com/lmittmann/tint
             - github.com/google/uuid
+            - github.com/jackc/pgx/v5
             - github.com/jackc/pgx/v5/pgxpool
             - github.com/amacneil/dbmate/v2/pkg/dbmate
             - github.com/amacneil/dbmate/v2/pkg/driver/postgres

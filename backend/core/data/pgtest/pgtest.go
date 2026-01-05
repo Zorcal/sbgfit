@@ -30,6 +30,20 @@ const (
 	disableTLS = true
 )
 
+// FromTemplateWithSeed creates a temporary test database from an existing template and
+// seeds the database.
+func FromTemplateWithSeed(t *testing.T, ctx context.Context, tmplName, dbName string) *pgxpool.Pool {
+	t.Helper()
+
+	pool := FromTemplate(t, ctx, tmplName, dbName)
+
+	if err := schema.SeedData(ctx, pool); err != nil {
+		t.Fatalf("seed database: %s", err)
+	}
+
+	return pool
+}
+
 // FromTemplate creates a temporary test database from an existing template.
 func FromTemplate(t *testing.T, ctx context.Context, tmplName, dbName string) *pgxpool.Pool {
 	t.Helper()
@@ -81,10 +95,6 @@ func FromTemplate(t *testing.T, ctx context.Context, tmplName, dbName string) *p
 
 	if err := pgdb.StatusCheck(ctx, pool); err != nil {
 		t.Fatalf("status check database: %s", err)
-	}
-
-	if err := schema.SeedData(ctx, pool); err != nil {
-		t.Fatalf("seed database: %s", err)
 	}
 
 	return pool
