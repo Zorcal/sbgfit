@@ -42,7 +42,7 @@ func respond[T any](w http.ResponseWriter, statusCode int, data T) error {
 		Data: data,
 	}
 	if err := json.NewEncoder(w).Encode(envelope); err != nil {
-		return fmt.Errorf("respond: encode json: %w", err)
+		return fmt.Errorf("encode json: %w", err)
 	}
 
 	return nil
