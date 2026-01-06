@@ -5,13 +5,12 @@ import (
 	"context"
 	"embed"
 	"fmt"
+	"net/url"
 
 	"github.com/amacneil/dbmate/v2/pkg/dbmate"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	_ "github.com/amacneil/dbmate/v2/pkg/driver/postgres"
-
-	"github.com/zorcal/sbgfit/backend/core/data/pgdb"
 )
 
 //go:embed migrations/*.sql
@@ -22,12 +21,13 @@ var seedSQL string
 
 // Migrate attempts to bring the database up to date with the migrations
 // defined in this package.
-func Migrate(ctx context.Context, cfg pgdb.Config) error {
-	if err := cfg.Validate(); err != nil {
-		return fmt.Errorf("validate config: %w", err)
+func Migrate(ctx context.Context, connStr string) error {
+	connURL, err := url.Parse(connStr)
+	if err != nil {
+		return fmt.Errorf("parse conn URL: %w", err)
 	}
 
-	db := dbmate.New(cfg.URL())
+	db := dbmate.New(connURL)
 	db.FS = migrationsFS
 	db.MigrationsDir = []string{"./migrations"}
 

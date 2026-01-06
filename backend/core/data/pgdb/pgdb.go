@@ -5,6 +5,8 @@ package pgdb
 import (
 	"context"
 	"fmt"
+	"net"
+	"strconv"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -60,4 +62,20 @@ func StatusCheck(ctx context.Context, db *pgxpool.Pool) error {
 	}
 
 	return nil
+}
+
+// ConnStr builds a PostgreSQL connection string from the given parameters.
+func ConnStr(host string, port int, user, password, dbName string, sslEnabled bool) string {
+	sslMode := "require"
+	if !sslEnabled {
+		sslMode = "disable"
+	}
+	return fmt.Sprintf(
+		"postgres://%s:%s@%s/%s?&sslmode=%s",
+		user,
+		password,
+		net.JoinHostPort(host, strconv.Itoa(port)),
+		dbName,
+		sslMode,
+	)
 }

@@ -2,8 +2,6 @@ package schema_test
 
 import (
 	"context"
-	"fmt"
-	"os"
 	"testing"
 
 	"github.com/jackc/pgx/v5"
@@ -13,32 +11,10 @@ import (
 	"github.com/zorcal/sbgfit/backend/core/data/schema"
 )
 
-const pgTemplateName = "schema_template"
-
-func TestMain(m *testing.M) {
-	ctx := context.Background()
-
-	cleanup, err := pgtest.NewTemplate(ctx, pgTemplateName)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "TestMain: create new posgres template: %s\n", err)
-		os.Exit(1)
-	}
-
-	code := m.Run()
-
-	if err := cleanup(ctx); err != nil {
-		fmt.Fprintf(os.Stderr, "TestMain: cleanup: %s\n", err)
-		os.Exit(1)
-	}
-
-	os.Exit(code)
-}
-
 func TestSeed(t *testing.T) {
 	ctx := context.Background()
 
-	dbName := t.Name()
-	pool := pgtest.FromTemplate(t, ctx, pgTemplateName, dbName)
+	pool := pgtest.New(t, ctx)
 
 	if err := schema.SeedData(ctx, pool); err != nil {
 		t.Fatalf("first seed failed: %v", err)
