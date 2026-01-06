@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -15,6 +14,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/zorcal/sbgfit/backend/core/mdl"
+	"github.com/zorcal/sbgfit/backend/core/testingx"
 	"github.com/zorcal/sbgfit/backend/pkg/ptr"
 )
 
@@ -84,7 +84,7 @@ func TestGetExercisesHandler(t *testing.T) {
 			}
 
 			h := New(Config{
-				Log:             slog.Default(),
+				Log:             testingx.NewLogger(t),
 				ExerciseService: mockService,
 			})
 			srv := httptest.NewServer(h)
@@ -160,7 +160,7 @@ func TestGetExercisesHandler_error(t *testing.T) {
 			}
 
 			h := New(Config{
-				Log:             slog.Default(),
+				Log:             testingx.NewLogger(t),
 				ExerciseService: mockService,
 			})
 			srv := httptest.NewServer(h)
