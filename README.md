@@ -29,3 +29,9 @@ Run:
 ```sh
 docker compose up -d
 ```
+
+Install `moq`:
+
+```sh
+go install github.com/matryer/moq@latest
+```
