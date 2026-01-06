@@ -31,21 +31,21 @@ func TestGetExercisesHandler(t *testing.T) {
 				{
 					ID:              uuid.New(),
 					Name:            "Push Up",
-					Category:        "Bodyweight",
+					Category:        "strength",
 					EquipmentTypes:  []string{"bodyweight"},
 					PrimaryMuscles:  []string{"chest"},
-					Tags:            []string{"bodybuilding"},
+					Tags:            []string{"functional"},
 					CreatedByUserID: uuid.New(),
 					CreatedAt:       time.Now(),
 					UpdatedAt:       time.Now(),
 				},
 				{
 					ID:              uuid.New(),
-					Name:            "Push Up",
-					Category:        "Bodyweight",
+					Name:            "Pull Up",
+					Category:        "strength",
 					EquipmentTypes:  []string{"bodyweight"},
-					PrimaryMuscles:  []string{"chest"},
-					Tags:            []string{"bodybuilding"},
+					PrimaryMuscles:  []string{"back"},
+					Tags:            []string{"functional"},
 					CreatedByUserID: uuid.New(),
 					CreatedAt:       time.Now(),
 					UpdatedAt:       time.Now(),
@@ -54,15 +54,15 @@ func TestGetExercisesHandler(t *testing.T) {
 		},
 		{
 			name:        "with filters",
-			queryParams: "?name=squat&category=strength&equipmentTypes=barbell,dumbbell&primaryMuscles=quads,glutes&tags=crossfit,strength&createdByUser=true",
+			queryParams: "?name=squat&category=strength&equipmentTypes=barbell,dumbbells&primaryMuscles=quads,glutes&tags=crossfit,functional&createdByUser=true",
 			mockResponse: []mdl.Exercise{
 				{
 					ID:              uuid.New(),
 					Name:            "Back Squat",
-					Category:        "Strength",
+					Category:        "strength",
 					EquipmentTypes:  []string{"barbell"},
 					PrimaryMuscles:  []string{"quads", "glutes"},
-					Tags:            []string{"crossfit", "strength"},
+					Tags:            []string{"crossfit", "functional"},
 					CreatedByUserID: uuid.New(),
 					CreatedAt:       time.Now(),
 					UpdatedAt:       time.Now(),
@@ -207,13 +207,13 @@ func TestBuildExerciseFilter(t *testing.T) {
 		},
 		{
 			name:        "all filters combined",
-			queryParams: "?name=deadlift&category=strength&equipmentTypes=barbell&primaryMuscles=back,hamstrings&tags=powerlifting,strength&createdByUser=true",
+			queryParams: "?name=deadlift&category=strength&equipmentTypes=barbell&primaryMuscles=back,hamstrings&tags=functional,strength-endurance&createdByUser=true",
 			want: mdl.ExerciseFilter{
 				Name:           ptr.To("deadlift"),
 				Category:       ptr.To("strength"),
 				EquipmentTypes: []string{"barbell"},
 				PrimaryMuscles: []string{"back", "hamstrings"},
-				Tags:           []string{"powerlifting", "strength"},
+				Tags:           []string{"functional", "strength-endurance"},
 				CreatedByUser:  ptr.To(true),
 			},
 		},
@@ -252,6 +252,10 @@ func TestBuildExerciseFilter_error(t *testing.T) {
 		queryParams string
 	}{
 		{
+			name:        "invalid category",
+			queryParams: "?category=invalid_category",
+		},
+		{
 			name:        "invalid equipment type",
 			queryParams: "?equipmentTypes=invalid_type",
 		},
@@ -269,7 +273,7 @@ func TestBuildExerciseFilter_error(t *testing.T) {
 		},
 		{
 			name:        "mixed valid and invalid equipment types",
-			queryParams: "?equipmentTypes=barbell,invalid_type,dumbbell",
+			queryParams: "?equipmentTypes=barbell,invalid_type,dumbbells",
 		},
 	}
 	for _, tt := range tests {

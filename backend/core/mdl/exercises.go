@@ -38,21 +38,17 @@ type Exercise struct {
 // IsValidEquipmentType checks if the given string is a valid equipment type.
 func IsValidEquipmentType(s string) bool {
 	validTypes := []string{
-		"barbell",
-		"dumbbell",
-		"kettlebell",
-		"cable",
-		"machine",
 		"bodyweight",
-		"bands",
-		"medicine_ball",
-		"plates",
-		"pull_up_bar",
-		"box",
-		"rope",
+		"kettlebell",
+		"rowing-machine",
+		"ski-erg",
+		"medicine-ball",
+		"dumbbells",
+		"barbell",
 		"sled",
-		"trx",
-		"other",
+		"box",
+		"jump-rope",
+		"assault-bike",
 	}
 	return slices.Contains(validTypes, s)
 }
@@ -65,17 +61,17 @@ func IsValidPrimaryMuscle(s string) bool {
 		"shoulders",
 		"biceps",
 		"triceps",
+		"forearms",
+		"core",
+		"abs",
+		"obliques",
+		"glutes",
 		"quads",
 		"hamstrings",
-		"glutes",
 		"calves",
-		"abs",
-		"traps",
-		"rhomboids",
-		"lats",
-		"forearms",
-		"cardio",
-		"full_body",
+		"legs",
+		"full-body",
+		"grip",
 	}
 	return slices.Contains(validMuscles, s)
 }
@@ -85,25 +81,25 @@ func IsValidExerciseTag(s string) bool {
 	validTags := []string{
 		"crossfit",
 		"hyrox",
-		"bodybuilding",
-		"strength",
-		"powerlifting",
-		"olympic_lifting",
-		"cardio",
-		"hiit",
-		"yoga",
-		"pilates",
-		"stretching",
-		"rehab",
-		"beginner",
-		"intermediate",
+		"beginner-friendly",
 		"advanced",
-		"compound",
-		"isolation",
-		"unilateral",
-		"bilateral",
-		"explosive",
-		"isometric",
+		"conditioning",
+		"strength-endurance",
+		"power",
+		"core",
+		"functional",
+		"competition",
+		"plyometric",
 	}
 	return slices.Contains(validTags, s)
+}
+
+// IsValidCategory checks if the given string is a valid exercise category.
+func IsValidCategory(s string) bool {
+	validCategories := []string{
+		"cardio",
+		"strength",
+		"plyometric",
+	}
+	return slices.Contains(validCategories, s)
 }

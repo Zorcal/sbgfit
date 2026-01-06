@@ -28,7 +28,7 @@ func getExercisesHandler(svc ExerciseService) httprouter.Handler {
 				InternalErr:     err,
 			}
 		}
-		
+
 		data, err := svc.Exercises(r.Context(), fltr)
 		if err != nil {
 			return fmt.Errorf("get exercise: %w", err)
@@ -50,6 +50,9 @@ func buildExerciseFilter(r *http.Request) (mdl.ExerciseFilter, error) {
 	}
 
 	if category := r.URL.Query().Get("category"); category != "" {
+		if !mdl.IsValidCategory(category) {
+			return mdl.ExerciseFilter{}, fmt.Errorf("invalid category: %q", category)
+		}
 		filter.Category = ptr.To(category)
 	}
 
