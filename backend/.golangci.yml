@@ -113,6 +113,7 @@ linters:
             - github.com/jackc/pgx/v5/pgxpool
             - github.com/amacneil/dbmate/v2/pkg/dbmate
             - github.com/amacneil/dbmate/v2/pkg/driver/postgres
+            - github.com/google/go-cmp/cmp
     wrapcheck:
       ignore-sigs:
         - fmt.Errorf
