@@ -6,7 +6,7 @@ import (
 )
 
 type httpError struct {
-	StatusCode      int    `json:"statusCode,omitzero"`
+	StatusCode      int    `json:"-"`
 	ExternalMessage string `json:"error,omitzero"`
 	InternalErr     error  `json:"-"`
 }
