@@ -17,6 +17,7 @@ import (
 	"github.com/zorcal/sbgfit/backend/cmd/server/handler"
 	"github.com/zorcal/sbgfit/backend/core/data/pgdb"
 	"github.com/zorcal/sbgfit/backend/core/data/schema"
+	"github.com/zorcal/sbgfit/backend/core/exercise"
 	"github.com/zorcal/sbgfit/backend/pkg/slogctx"
 )
 
@@ -73,8 +74,11 @@ func run(ctx context.Context, cfg Config, log *slog.Logger) (retErr error) {
 		return fmt.Errorf("status check database connection: %w", err)
 	}
 
+	exerciseSvc := exercise.NewService(pool)
+
 	handler := handler.New(handler.Config{
-		Log: log,
+		Log:             log,
+		ExerciseService: exerciseSvc,
 	})
 
 	srv := http.Server{

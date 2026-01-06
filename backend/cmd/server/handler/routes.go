@@ -1,15 +1,9 @@
 package handler
 
 import (
-	"fmt"
-	"net/http"
-
 	"github.com/zorcal/sbgfit/backend/pkg/httprouter"
 )
 
-func routes(r *httprouter.Router) {
-	r.Handle("GET /{$}", func(w http.ResponseWriter, r *http.Request) error {
-		fmt.Fprint(w, "Hello world!")
-		return nil
-	})
+func routes(r *httprouter.Router, cfg Config) {
+	r.Handle("GET /api/v1/exercises", getExercisesHandler(cfg.ExerciseService))
 }
