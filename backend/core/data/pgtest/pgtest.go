@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"strconv"
 	"testing"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -153,10 +154,19 @@ func poolConfig(dbName string) (*pgxpool.Config, error) {
 func connStr(dbName string) string {
 	return pgdb.ConnStr(
 		cmp.Or(os.Getenv("POSTGRES_HOST"), host),
-		port,
+		cmp.Or(parsePortFromEnv(), port),
 		cmp.Or(os.Getenv("POSTGRES_USER"), username),
 		cmp.Or(os.Getenv("POSTGRES_PASSWORD"), password),
 		dbName,
 		sslEnabled,
 	)
+}
+
+func parsePortFromEnv() int {
+	if p := os.Getenv("POSTGRES_PORT"); p != "" {
+		if parsed, err := strconv.Atoi(p); err == nil {
+			return parsed
+		}
+	}
+	return 0
 }
