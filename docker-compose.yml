@@ -6,8 +6,9 @@ services:
       - "5432:5432"
     environment:
       - POSTGRES_HOST_AUTH_METHOD=trust
+      - POSTGRES_DB=sbgfit
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "postgres"]
+      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "sbgfit"]
       interval: 1s
       timeout: 3s
       retries: 30

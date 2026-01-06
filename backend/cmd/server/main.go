@@ -11,9 +11,12 @@ import (
 	"syscall"
 
 	"github.com/ardanlabs/conf/v3"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/lmittmann/tint"
 
 	"github.com/zorcal/sbgfit/backend/cmd/server/handler"
+	"github.com/zorcal/sbgfit/backend/core/data/pgdb"
+	"github.com/zorcal/sbgfit/backend/core/data/schema"
 	"github.com/zorcal/sbgfit/backend/pkg/slogctx"
 )
 
@@ -48,6 +51,27 @@ func main() {
 
 func run(ctx context.Context, cfg Config, log *slog.Logger) (retErr error) {
 	log.InfoContext(ctx, "Starting...", "config", cfg)
+
+	connStr := pgdb.ConnStr(cfg.DB.Host, cfg.DB.Port, cfg.DB.User, cfg.DB.Password, cfg.DB.Name, cfg.DB.SSLEnabled)
+
+	if err := schema.Migrate(ctx, connStr); err != nil {
+		return fmt.Errorf("migrate database: %w", err)
+	}
+
+	poolConfig, err := pgxpool.ParseConfig(connStr)
+	if err != nil {
+		return fmt.Errorf("parse database pool config: %w", err)
+	}
+
+	pool, err := pgdb.NewPool(ctx, poolConfig)
+	if err != nil {
+		return fmt.Errorf("new database pool: %w", err)
+	}
+	defer pool.Close()
+
+	if err := pgdb.StatusCheck(ctx, pool); err != nil {
+		return fmt.Errorf("status check database connection: %w", err)
+	}
 
 	handler := handler.New(handler.Config{
 		Log: log,

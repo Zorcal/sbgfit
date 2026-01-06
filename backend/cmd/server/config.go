@@ -19,6 +19,14 @@ type Config struct {
 		ShutdownTimeout time.Duration `conf:"default:20s"`
 		Addr            string        `conf:"default:127.0.0.1:4250"`
 	}
+	DB struct {
+		User       string `conf:"default:postgres"`
+		Password   string `conf:"default:postgres,mask"`
+		Host       string `conf:"default:sbgfit-postgres"`
+		Port       int    `conf:"default:5432"`
+		Name       string `conf:"default:sbgfit"`
+		SSLEnabled bool   `conf:"default:false"`
+	}
 }
 
 // LogValue implements slog.LogValuer.
@@ -33,6 +41,13 @@ func (c Config) LogValue() slog.Value {
 			slog.String("idle_timeout", c.Web.IdleTimeout.String()),
 			slog.String("shutdown_timeout", c.Web.ShutdownTimeout.String()),
 			slog.String("addr", c.Web.Addr),
+		),
+		slog.Group("db",
+			slog.String("user", c.DB.User),
+			slog.String("host", c.DB.Host),
+			slog.Int("port", c.DB.Port),
+			slog.String("name", c.DB.Name),
+			slog.Bool("ssl_enabled", c.DB.SSLEnabled),
 		),
 	)
 }
