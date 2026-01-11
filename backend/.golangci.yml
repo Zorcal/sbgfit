@@ -121,7 +121,14 @@ linters:
         - errors.Unwrap(
         - errors.Join(
         - .Write(
-
+  exclusions:
+    rules:
+      - path: main\.go
+        linters:
+          - contextcheck
+      - path: _test\.go
+        linters:
+          - errcheck
 formatters:
   enable:
     - gci
