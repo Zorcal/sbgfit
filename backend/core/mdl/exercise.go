@@ -15,24 +15,22 @@ type ExerciseFilter struct {
 	EquipmentTypes []string
 	PrimaryMuscles []string
 	Tags           []string
-	CreatedByUser  *bool
 }
 
 // Exercise represents a standardized training movement that forms the building
 // blocks of workouts. Exercises are the atomic units of training that users
 // select and combine to create personalized workout routines.
 type Exercise struct {
-	ID              uuid.UUID
-	Name            string
-	Category        string
-	Description     *string
-	Instructions    []string
-	EquipmentTypes  []string
-	PrimaryMuscles  []string
-	Tags            []string
-	CreatedByUserID uuid.UUID
-	CreatedAt       time.Time
-	UpdatedAt       time.Time
+	ID             uuid.UUID
+	Name           string
+	Category       string
+	Description    *string
+	Instructions   []string
+	EquipmentTypes []string
+	PrimaryMuscles []string
+	Tags           []string
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
 }
 
 // IsValidEquipmentType checks if the given string is a valid equipment type.

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/zorcal/sbgfit/backend/core/mdl"
@@ -84,14 +83,6 @@ func buildExerciseFilter(r *http.Request) (mdl.ExerciseFilter, error) {
 			}
 		}
 		filter.Tags = tagList
-	}
-
-	if createdByUser := r.URL.Query().Get("createdByUser"); createdByUser != "" {
-		if val, err := strconv.ParseBool(createdByUser); err == nil {
-			filter.CreatedByUser = ptr.To(val)
-		} else {
-			return mdl.ExerciseFilter{}, fmt.Errorf("invalid createdByUser value: %q", createdByUser)
-		}
 	}
 
 	return filter, nil
