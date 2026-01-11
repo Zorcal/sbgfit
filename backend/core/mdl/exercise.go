@@ -7,8 +7,10 @@ import (
 	"github.com/google/uuid"
 )
 
-// ExerciseFilter represents search and filtering criteria for finding exercises
-// that match specific training requirements and user preferences.
+// ExerciseFilter represents search and filtering criteria for finding
+// exercises from the exercise library that match specific training
+// requirements. Used to help users discover exercises they might want to clone
+// for their personal use.
 type ExerciseFilter struct {
 	Name           *string
 	Category       *string
@@ -17,9 +19,11 @@ type ExerciseFilter struct {
 	Tags           []string
 }
 
-// Exercise represents a standardized training movement that forms the building
-// blocks of workouts. Exercises are the atomic units of training that users
-// select and combine to create personalized workout routines.
+// Exercise represents a standardized training movement from the exercise
+// library provided by the application. These exercises are static, predefined
+// movements that serve as templates for users. Users can clone exercises from
+// this library to create their own customizable "user exercises" that they can
+// modify to fit their specific needs and preferences.
 type Exercise struct {
 	ID             uuid.UUID
 	Name           string

@@ -1,4 +1,7 @@
-// Package exercise provides the application service for managing exercises.
+// Package exercise provides the application service for managing both the
+// exercise library and user-created exercises. This includes retrieving
+// predefined exercises from the library that users can browse and clone, as
+// well as managing user-specific exercises that have been customized.
 package exercise
 
 import (
@@ -12,7 +15,10 @@ import (
 	"github.com/zorcal/sbgfit/backend/pkg/ptr"
 )
 
-// Service is the exercise application service.
+// Service manages both the exercise library and user-created exercises. It
+// provides read-only access to predefined exercises from the library that
+// serve as templates, and will handle CRUD operations for user-specific
+// exercises that have been cloned and customized.
 type Service struct {
 	pool *pgxpool.Pool
 }
@@ -24,7 +30,8 @@ func NewService(pool *pgxpool.Pool) *Service {
 	}
 }
 
-// Exercises retrieves a list of exercises based on the provided filter criteria.
+// Exercises retrieves predefined exercises from the exercise library based on
+// the provided filter criteria.
 func (s *Service) Exercises(ctx context.Context, fltr mdl.ExerciseFilter) ([]mdl.Exercise, error) {
 	now := time.Now()
 
