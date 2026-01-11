@@ -26,6 +26,10 @@ func New(cfg Config) http.Handler {
 	return r
 }
 
+type response[T any] struct {
+	Data T `json:"data"`
+}
+
 func respond[T any](w http.ResponseWriter, statusCode int, data T) error {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 
@@ -36,12 +40,10 @@ func respond[T any](w http.ResponseWriter, statusCode int, data T) error {
 
 	w.WriteHeader(statusCode)
 
-	envelope := struct {
-		Data T `json:"data"`
-	}{
+	resp := response[T]{
 		Data: data,
 	}
-	if err := json.NewEncoder(w).Encode(envelope); err != nil {
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
 		return fmt.Errorf("encode json: %w", err)
 	}
 

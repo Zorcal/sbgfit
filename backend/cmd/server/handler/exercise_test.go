@@ -91,7 +91,7 @@ func TestGetExercisesHandler(t *testing.T) {
 
 			client := srv.Client()
 
-			req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/v1/exercises%s", srv.URL, tt.queryParams), nil)
+			req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, fmt.Sprintf("%s/api/v1/exercises%s", srv.URL, tt.queryParams), nil)
 			if err != nil {
 				t.Fatalf("error creating request: %v", err)
 			}
@@ -106,16 +106,12 @@ func TestGetExercisesHandler(t *testing.T) {
 				t.Errorf("got status code = %d, want %d", resp.StatusCode, http.StatusOK)
 			}
 
-			var got struct {
-				Data []mdl.Exercise `json:"data"`
-			}
+			var got response[[]mdl.Exercise]
 			if err := json.NewDecoder(resp.Body).Decode(&got); err != nil {
 				t.Fatalf("error decoding response body: %v", err)
 			}
 
-			want := struct {
-				Data []mdl.Exercise `json:"data"`
-			}{
+			want := response[[]mdl.Exercise]{
 				Data: tt.mockResponse,
 			}
 
@@ -167,7 +163,7 @@ func TestGetExercisesHandler_error(t *testing.T) {
 
 			client := srv.Client()
 
-			req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/v1/exercises%s", srv.URL, tt.queryParams), nil)
+			req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, fmt.Sprintf("%s/api/v1/exercises%s", srv.URL, tt.queryParams), nil)
 			if err != nil {
 				t.Fatalf("error creating request: %v", err)
 			}
