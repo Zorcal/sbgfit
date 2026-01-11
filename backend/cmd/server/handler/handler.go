@@ -2,12 +2,13 @@
 package handler
 
 import (
-	"encoding/json"
 	"fmt"
 	"log/slog"
 	"net/http"
 
-	"github.com/zorcal/sbgfit/backend/pkg/httprouter"
+	"github.com/ogen-go/ogen/middleware"
+
+	"github.com/zorcal/sbgfit/backend/cmd/server/handler/openapi"
 )
 
 type Config struct {
@@ -15,37 +16,24 @@ type Config struct {
 	ExerciseService ExerciseService
 }
 
-func New(cfg Config) http.Handler {
-	r := httprouter.New(
-		traceMiddleware(),
-		loggingMiddleware(cfg.Log),
-		errorMiddleware(cfg.Log),
-		panicRecovery(cfg.Log),
+func New(cfg Config) (http.Handler, error) {
+	srv, err := openapi.NewServer(
+		&api{
+			log:         cfg.Log,
+			exerciseSvc: cfg.ExerciseService,
+		},
+		openapi.WithMiddleware(middleware.ChainMiddlewares(
+			panicRecoveryMiddleware(cfg.Log),
+		)),
 	)
-	routes(r, cfg)
-	return r
-}
-
-type response[T any] struct {
-	Data T `json:"data"`
-}
-
-func respond[T any](w http.ResponseWriter, statusCode int, data T) error {
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-
-	if statusCode == http.StatusNoContent {
-		w.WriteHeader(http.StatusNoContent)
-		return nil
+	if err != nil {
+		return nil, fmt.Errorf("create openapi server: %w", err)
 	}
 
-	w.WriteHeader(statusCode)
+	h := wrapHTTPMiddleware(srv,
+		httpTraceMiddleware(),
+		httpLoggingMiddleware(cfg.Log),
+	)
 
-	resp := response[T]{
-		Data: data,
-	}
-	if err := json.NewEncoder(w).Encode(resp); err != nil {
-		return fmt.Errorf("encode json: %w", err)
-	}
-
-	return nil
+	return h, nil
 }

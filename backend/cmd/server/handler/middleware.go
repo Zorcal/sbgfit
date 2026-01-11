@@ -2,8 +2,7 @@ package handler
 
 import (
 	"cmp"
-	"encoding/json"
-	"errors"
+	"context"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -11,15 +10,39 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/ogen-go/ogen/middleware"
 
-	"github.com/zorcal/sbgfit/backend/pkg/httprouter"
+	"github.com/zorcal/sbgfit/backend/cmd/server/handler/openapi"
 	"github.com/zorcal/sbgfit/backend/pkg/slogctx"
 	"github.com/zorcal/sbgfit/backend/pkg/tracectx"
 )
 
-func traceMiddleware() httprouter.Middleware {
-	return func(next httprouter.Handler) httprouter.Handler {
-		return func(w http.ResponseWriter, r *http.Request) error {
+func panicRecoveryMiddleware(log *slog.Logger) openapi.Middleware {
+	return func(req middleware.Request, next middleware.Next) (resp middleware.Response, err error) {
+		defer func() {
+			if rec := recover(); rec != nil {
+				stack := debug.Stack()
+
+				log.ErrorContext(req.Context, "Panic recovered",
+					"panic", rec,
+					"stack", string(stack),
+					"operation", req.OperationName,
+					"operation_id", req.OperationID,
+					"method", req.Raw.Method,
+					"path", req.Raw.URL.Path,
+				)
+
+				err = fmt.Errorf("PANIC: %v", rec)
+			}
+		}()
+
+		return next(req)
+	}
+}
+
+func httpTraceMiddleware() func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
 
 			traceparent := cmp.Or(r.Header.Get("Traceparent"), uuid.NewString())
@@ -27,19 +50,19 @@ func traceMiddleware() httprouter.Middleware {
 			ctx = tracectx.Set(ctx, traceparent)
 			ctx = slogctx.Attach(ctx, "traceparent", traceparent)
 
-			return next(w, r.WithContext(ctx))
-		}
+			next.ServeHTTP(w, r.WithContext(ctx))
+		})
 	}
 }
 
-func loggingMiddleware(log *slog.Logger) httprouter.Middleware {
-	return func(next httprouter.Handler) httprouter.Handler {
-		return func(w http.ResponseWriter, r *http.Request) (retErr error) {
+func httpLoggingMiddleware(log *slog.Logger) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			now := time.Now()
 
-			rr := &responseRecorder{ResponseWriter: w, statusCode: http.StatusOK}
+			rr := &responseRecorder{ResponseWriter: w}
 
-			defer func() {
+			defer func(ctx context.Context) {
 				attrs := []slog.Attr{
 					slog.String("method", r.Method),
 					slog.String("path", r.URL.Path),
@@ -51,97 +74,44 @@ func loggingMiddleware(log *slog.Logger) httprouter.Middleware {
 					slog.Time("finished_at", time.Now()),
 					slog.Int64("took_ms", time.Since(now).Milliseconds()),
 				}
-				if retErr != nil {
-					// Should not happen. Caught by error middleware.
-					attrs = append(attrs, slog.String("error", retErr.Error()))
-				}
-				log.LogAttrs(r.Context(), logLevel(rr.statusCode), "HTTP request completed", attrs...)
-			}()
 
-			return next(rr, r)
-		}
+				log.LogAttrs(ctx, slog.LevelInfo, "HTTP request completed", attrs...)
+			}(r.Context())
+
+			next.ServeHTTP(rr, r)
+		})
 	}
 }
 
-// responseRecorder is a wrapper around http.ResponseWriter to capture the
-// status code.
 type responseRecorder struct {
 	http.ResponseWriter
 
 	statusCode int
 }
 
-func (rw *responseRecorder) WriteHeader(statusCode int) {
-	rw.statusCode = statusCode
-	rw.ResponseWriter.WriteHeader(statusCode)
-}
-
-func (rw *responseRecorder) Write(b []byte) (int, error) {
-	return rw.ResponseWriter.Write(b)
-}
-
-func logLevel(statusCode int) slog.Level {
-	switch {
-	case statusCode >= 500:
-		return slog.LevelError
-	case statusCode >= 400:
-		return slog.LevelWarn
-	default:
-		return slog.LevelInfo
+func (sr *responseRecorder) WriteHeader(code int) {
+	if sr.statusCode == 0 {
+		sr.statusCode = code
 	}
+	sr.ResponseWriter.WriteHeader(code)
 }
 
-func panicRecovery(log *slog.Logger) httprouter.Middleware {
-	return func(next httprouter.Handler) httprouter.Handler {
-		return func(w http.ResponseWriter, r *http.Request) (err error) {
-			defer func() {
-				if rec := recover(); rec != nil {
-					stack := debug.Stack()
+func (sr *responseRecorder) Write(data []byte) (int, error) {
+	if sr.statusCode == 0 {
+		sr.statusCode = http.StatusOK
+	}
+	return sr.ResponseWriter.Write(data)
+}
 
-					log.ErrorContext(r.Context(), "Panic recovered",
-						"panic", rec,
-						"stack", string(stack),
-						"method", r.Method,
-						"path", r.URL.Path,
-					)
-
-					err = fmt.Errorf("PANIC: %v", rec)
-				}
-			}()
-
-			return next(w, r)
+// wrapHTTPMiddleware wraps the given handler with the provided middlewares.
+// Middlewares are applied in the order they are provided, meaning the first
+// middleware in the slice will be the outermost wrapper.
+func wrapHTTPMiddleware(handler http.Handler, middlewares ...func(http.Handler) http.Handler) http.Handler {
+	for i := len(middlewares) - 1; i >= 0; i-- {
+		middleware := middlewares[i]
+		if middleware != nil {
+			handler = middleware(handler)
 		}
 	}
-}
-
-func errorMiddleware(log *slog.Logger) httprouter.Middleware {
-	return func(next httprouter.Handler) httprouter.Handler {
-		return func(w http.ResponseWriter, r *http.Request) error {
-			err := next(w, r)
-			if err == nil {
-				return nil
-			}
-
-			ctx := r.Context()
-
-			var httpErr *httpError
-			if !errors.As(err, &httpErr) {
-				httpErr = &httpError{
-					StatusCode:      http.StatusInternalServerError,
-					ExternalMessage: http.StatusText(http.StatusInternalServerError),
-					InternalErr:     err,
-				}
-			}
-
-			log.ErrorContext(ctx, "Request error", "error", httpErr)
-
-			w.WriteHeader(httpErr.StatusCode)
-
-			if err := json.NewEncoder(w).Encode(httpErr); err != nil {
-				log.ErrorContext(ctx, "Failed to encode error response", "error", err)
-			}
-
-			return nil
-		}
-	}
+	return handler
 }

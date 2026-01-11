@@ -76,10 +76,13 @@ func run(ctx context.Context, cfg Config, log *slog.Logger) (retErr error) {
 
 	exerciseSvc := exercise.NewService(pool)
 
-	handler := handler.New(handler.Config{
+	handler, err := handler.New(handler.Config{
 		Log:             log,
 		ExerciseService: exerciseSvc,
 	})
+	if err != nil {
+		return fmt.Errorf("create handler: %w", err)
+	}
 
 	srv := http.Server{
 		Addr:         cfg.Web.Addr,

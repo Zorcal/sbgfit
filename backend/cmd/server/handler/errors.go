@@ -6,9 +6,9 @@ import (
 )
 
 type httpError struct {
-	StatusCode      int    `json:"-"`
-	ExternalMessage string `json:"error,omitzero"`
-	InternalErr     error  `json:"-"`
+	StatusCode      int
+	ExternalMessage string
+	InternalErr     error
 }
 
 func (e *httpError) Error() string {
@@ -22,11 +22,14 @@ func (e *httpError) Unwrap() error {
 	return e.InternalErr
 }
 
-// LogValue implements slog.LogValuer.
 func (e *httpError) LogValue() slog.Value {
+	var internalErrStr string
+	if e.InternalErr != nil {
+		internalErrStr = e.InternalErr.Error()
+	}
 	return slog.GroupValue(
 		slog.Int("status_code", e.StatusCode),
 		slog.String("external", e.ExternalMessage),
-		slog.String("inernal", e.InternalErr.Error()),
+		slog.String("internal", internalErrStr),
 	)
 }

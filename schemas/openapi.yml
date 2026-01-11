@@ -1,0 +1,120 @@
+openapi: 3.0.3
+info:
+  title: SBGFit API
+  description: Fitness application API
+  version: 1.0.0
+
+paths:
+  /exercises:
+    get:
+      summary: Get exercises from the library
+      description: Retrieves predefined exercises from the library based on filter criteria
+      operationId: getExercises
+      parameters:
+        - name: name
+          in: query
+          description: Filter by exercise name
+          required: false
+          schema:
+            type: string
+        - name: category
+          in: query
+          description: Filter by exercise category
+          required: false
+          schema:
+            type: string
+            enum: [cardio, strength, plyometric]
+        - name: equipmentTypes
+          in: query
+          description: Filter by equipment types (comma-separated)
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of exercises
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExerciseResponse"
+        "400":
+          description: Invalid filter parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        default:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  schemas:
+    Exercise:
+      type: object
+      required:
+        - id
+        - name
+        - category
+        - equipmentTypes
+        - primaryMuscles
+        - tags
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        category:
+          type: string
+          enum: [cardio, strength, plyometric]
+        description:
+          type: string
+          nullable: true
+        instructions:
+          type: array
+          items:
+            type: string
+        equipmentTypes:
+          type: array
+          items:
+            type: string
+            enum: [bodyweight, kettlebell, rowing-machine, ski-erg, medicine-ball, dumbbells, barbell, sled, box, jump-rope, assault-bike]
+        primaryMuscles:
+          type: array
+          items:
+            type: string
+            enum: [chest, back, shoulders, biceps, triceps, forearms, core, abs, obliques, glutes, quads, hamstrings, calves, legs, full-body, grip]
+        tags:
+          type: array
+          items:
+            type: string
+            enum: [crossfit, hyrox, beginner-friendly, advanced, conditioning, strength-endurance, power, core, functional, competition, plyometric]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ExerciseResponse:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Exercise"
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string

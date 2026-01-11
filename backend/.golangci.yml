@@ -98,7 +98,7 @@ linters:
       verbose: true
     gosec:
       excludes:
-        - G104 # Handled by other errcheck
+        - G104 # Handled by errcheck
     depguard:
       rules:
         main:
@@ -114,6 +114,15 @@ linters:
             - github.com/amacneil/dbmate/v2/pkg/dbmate
             - github.com/amacneil/dbmate/v2/pkg/driver/postgres
             - github.com/google/go-cmp/cmp
+            - github.com/ogen-go/ogen/middleware
+    ireturn:
+      allow:
+        - anon
+        - error
+        - empty
+        - stdlib
+        # Allow api type to return ogen interfaces
+        - "github.com/zorcal/sbgfit/backend/cmd/server/handler/openapi.*"
     wrapcheck:
       ignore-sigs:
         - fmt.Errorf
