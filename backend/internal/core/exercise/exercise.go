@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/zorcal/sbgfit/backend/internal/mdl"
+	"github.com/zorcal/sbgfit/backend/internal/core/mdl"
 	"github.com/zorcal/sbgfit/backend/pkg/ptr"
 )
 

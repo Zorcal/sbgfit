@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/zorcal/sbgfit/backend/cmd/server/handler/openapi"
-	"github.com/zorcal/sbgfit/backend/internal/mdl"
+	"github.com/zorcal/sbgfit/backend/internal/core/mdl"
 )
 
 //go:generate moq -rm -fmt goimports -out exercise_service_moq_test.go . ExerciseService:MockeExerciseServiced

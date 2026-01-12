@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/zorcal/sbgfit/backend/cmd/server/handler/openapi"
-	"github.com/zorcal/sbgfit/backend/internal/mdl"
+	"github.com/zorcal/sbgfit/backend/internal/core/mdl"
 	"github.com/zorcal/sbgfit/backend/pkg/ptr"
 	"github.com/zorcal/sbgfit/backend/pkg/slicesx"
 )

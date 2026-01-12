@@ -7,7 +7,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/zorcal/sbgfit/backend/internal/mdl"
+	"github.com/zorcal/sbgfit/backend/internal/core/mdl"
 )
 
 // Ensure, that MockeExerciseServiced does implement ExerciseService.

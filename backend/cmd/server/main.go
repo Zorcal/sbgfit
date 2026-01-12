@@ -15,9 +15,9 @@ import (
 	"github.com/lmittmann/tint"
 
 	"github.com/zorcal/sbgfit/backend/cmd/server/handler"
+	"github.com/zorcal/sbgfit/backend/internal/core/exercise"
 	"github.com/zorcal/sbgfit/backend/internal/data/pgdb"
 	"github.com/zorcal/sbgfit/backend/internal/data/schema"
-	"github.com/zorcal/sbgfit/backend/internal/exercise"
 	"github.com/zorcal/sbgfit/backend/pkg/slogctx"
 )
 
