@@ -1,5 +1,5 @@
-// Package handler provides the handler for the HTTP server.
-package handler
+// Package api provides the handler for the HTTP server.
+package api
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 
 	"github.com/ogen-go/ogen/middleware"
 
-	"github.com/zorcal/sbgfit/backend/cmd/server/handler/openapi"
+	"github.com/zorcal/sbgfit/backend/api/openapi"
 )
 
 type Config struct {

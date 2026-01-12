@@ -1,4 +1,4 @@
-package handler
+package api
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/zorcal/sbgfit/backend/cmd/server/handler/openapi"
+	"github.com/zorcal/sbgfit/backend/api/openapi"
 	"github.com/zorcal/sbgfit/backend/internal/core/mdl"
 )
 

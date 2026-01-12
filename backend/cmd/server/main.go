@@ -14,7 +14,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/lmittmann/tint"
 
-	"github.com/zorcal/sbgfit/backend/cmd/server/handler"
+	"github.com/zorcal/sbgfit/backend/api"
 	"github.com/zorcal/sbgfit/backend/internal/core/exercise"
 	"github.com/zorcal/sbgfit/backend/internal/data/pgdb"
 	"github.com/zorcal/sbgfit/backend/internal/data/schema"
@@ -76,7 +76,7 @@ func run(ctx context.Context, cfg Config, log *slog.Logger) (retErr error) {
 
 	exerciseSvc := exercise.NewService(pool)
 
-	handler, err := handler.New(handler.Config{
+	handler, err := api.New(api.Config{
 		Log:             log,
 		ExerciseService: exerciseSvc,
 	})

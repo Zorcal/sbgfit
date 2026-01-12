@@ -1,4 +1,4 @@
-package handler
+package api
 
 import (
 	"cmp"
@@ -12,7 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/ogen-go/ogen/middleware"
 
-	"github.com/zorcal/sbgfit/backend/cmd/server/handler/openapi"
+	"github.com/zorcal/sbgfit/backend/api/openapi"
 	"github.com/zorcal/sbgfit/backend/pkg/slogctx"
 	"github.com/zorcal/sbgfit/backend/pkg/tracectx"
 )

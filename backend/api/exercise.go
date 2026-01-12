@@ -1,11 +1,11 @@
-package handler
+package api
 
 import (
 	"context"
 	"fmt"
 
-	"github.com/zorcal/sbgfit/backend/cmd/server/handler/adapt"
-	"github.com/zorcal/sbgfit/backend/cmd/server/handler/openapi"
+	"github.com/zorcal/sbgfit/backend/api/adapt"
+	"github.com/zorcal/sbgfit/backend/api/openapi"
 	"github.com/zorcal/sbgfit/backend/pkg/slicesx"
 )
 
