@@ -1,4 +1,3 @@
-// Package api provides the handler for the HTTP server.
 package api
 
 import (
@@ -7,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/ogen-go/ogen/middleware"
-
 	"github.com/zorcal/sbgfit/backend/api/openapi"
 )
 
@@ -16,7 +14,7 @@ type Config struct {
 	ExerciseService ExerciseService
 }
 
-func New(cfg Config) (http.Handler, error) {
+func NewHandler(cfg Config) (http.Handler, error) {
 	srv, err := openapi.NewServer(
 		&api{
 			log:         cfg.Log,

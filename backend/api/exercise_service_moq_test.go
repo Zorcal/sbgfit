@@ -10,16 +10,16 @@ import (
 	"github.com/zorcal/sbgfit/backend/internal/core/mdl"
 )
 
-// Ensure, that MockeExerciseServiced does implement ExerciseService.
+// Ensure, that MockedExerciseServiced does implement ExerciseService.
 // If this is not the case, regenerate this file with moq.
-var _ ExerciseService = &MockeExerciseServiced{}
+var _ ExerciseService = &MockedExerciseServiced{}
 
-// MockeExerciseServiced is a mock implementation of ExerciseService.
+// MockedExerciseServiced is a mock implementation of ExerciseService.
 //
 //	func TestSomethingThatUsesExerciseService(t *testing.T) {
 //
 //		// make and configure a mocked ExerciseService
-//		mockedExerciseService := &MockeExerciseServiced{
+//		mockedExerciseService := &MockedExerciseServiced{
 //			ExercisesFunc: func(ctx context.Context, fltr mdl.ExerciseFilter) ([]mdl.Exercise, error) {
 //				panic("mock out the Exercises method")
 //			},
@@ -29,7 +29,7 @@ var _ ExerciseService = &MockeExerciseServiced{}
 //		// and then make assertions.
 //
 //	}
-type MockeExerciseServiced struct {
+type MockedExerciseServiced struct {
 	// ExercisesFunc mocks the Exercises method.
 	ExercisesFunc func(ctx context.Context, fltr mdl.ExerciseFilter) ([]mdl.Exercise, error)
 
@@ -47,9 +47,9 @@ type MockeExerciseServiced struct {
 }
 
 // Exercises calls ExercisesFunc.
-func (mock *MockeExerciseServiced) Exercises(ctx context.Context, fltr mdl.ExerciseFilter) ([]mdl.Exercise, error) {
+func (mock *MockedExerciseServiced) Exercises(ctx context.Context, fltr mdl.ExerciseFilter) ([]mdl.Exercise, error) {
 	if mock.ExercisesFunc == nil {
-		panic("MockeExerciseServiced.ExercisesFunc: method is nil but ExerciseService.Exercises was just called")
+		panic("MockedExerciseServiced.ExercisesFunc: method is nil but ExerciseService.Exercises was just called")
 	}
 	callInfo := struct {
 		Ctx  context.Context
@@ -68,7 +68,7 @@ func (mock *MockeExerciseServiced) Exercises(ctx context.Context, fltr mdl.Exerc
 // Check the length with:
 //
 //	len(mockedExerciseService.ExercisesCalls())
-func (mock *MockeExerciseServiced) ExercisesCalls() []struct {
+func (mock *MockedExerciseServiced) ExercisesCalls() []struct {
 	Ctx  context.Context
 	Fltr mdl.ExerciseFilter
 } {

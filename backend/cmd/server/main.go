@@ -76,7 +76,7 @@ func run(ctx context.Context, cfg Config, log *slog.Logger) (retErr error) {
 
 	exerciseSvc := exercise.NewService(pool)
 
-	handler, err := api.New(api.Config{
+	handler, err := api.NewHandler(api.Config{
 		Log:             log,
 		ExerciseService: exerciseSvc,
 	})

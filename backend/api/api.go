@@ -1,3 +1,4 @@
+// Package api provides the API handler for the HTTP server.
 package api
 
 import (
@@ -10,7 +11,7 @@ import (
 	"github.com/zorcal/sbgfit/backend/internal/core/mdl"
 )
 
-//go:generate moq -rm -fmt goimports -out exercise_service_moq_test.go . ExerciseService:MockeExerciseServiced
+//go:generate moq -rm -fmt goimports -out exercise_service_moq_test.go . ExerciseService:MockedExerciseServiced
 
 type ExerciseService interface {
 	Exercises(ctx context.Context, fltr mdl.ExerciseFilter) ([]mdl.Exercise, error)
