@@ -95,6 +95,7 @@ linters:
         - fmt.Fprint
         - (*net/http.Server).Close
         - (*github.com/jackc/pgx/v5/pgxpool.Pool).Query
+        - (net/http.ResponseWriter).Write
       verbose: true
     gosec:
       excludes:
@@ -114,13 +115,17 @@ linters:
             - github.com/amacneil/dbmate/v2/pkg/dbmate
             - github.com/amacneil/dbmate/v2/pkg/driver/postgres
             - github.com/google/go-cmp/cmp
+            - github.com/google/go-cmp/cmp/cmpopts
             - github.com/ogen-go/ogen/middleware
+            - github.com/go-faster/jx
+            - github.com/ogen-go/ogen/ogenerrors
     ireturn:
       allow:
         - anon
         - error
         - empty
         - stdlib
+        - generic
         # Allow api type to return ogen interfaces
         - "github.com/zorcal/sbgfit/backend/api/internal/openapi.*"
     wrapcheck:
@@ -138,6 +143,8 @@ linters:
       - path: _test\.go
         linters:
           - errcheck
+          - bodyclose
+          - unparam
 formatters:
   enable:
     - gci

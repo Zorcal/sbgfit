@@ -1,8 +1,6 @@
 package conv
 
 import (
-	"strings"
-
 	"github.com/zorcal/sbgfit/backend/api/internal/openapi"
 	"github.com/zorcal/sbgfit/backend/internal/core/mdl"
 	"github.com/zorcal/sbgfit/backend/pkg/ptr"
@@ -23,9 +21,9 @@ func ExerciseToAPI(ex mdl.Exercise) openapi.Exercise {
 		Category:       openapi.ExerciseCategory(ex.Category),
 		Description:    description,
 		Instructions:   ex.Instructions,
-		EquipmentTypes: slicesx.Map(ex.EquipmentTypes, func(s string) openapi.ExerciseEquipmentTypesItem { return openapi.ExerciseEquipmentTypesItem(s) }),
-		PrimaryMuscles: slicesx.Map(ex.PrimaryMuscles, func(s string) openapi.ExercisePrimaryMusclesItem { return openapi.ExercisePrimaryMusclesItem(s) }),
-		Tags:           slicesx.Map(ex.Tags, func(s string) openapi.ExerciseTagsItem { return openapi.ExerciseTagsItem(s) }),
+		EquipmentTypes: slicesx.Map(ex.EquipmentTypes, func(s string) openapi.EquipmentType { return openapi.EquipmentType(s) }),
+		PrimaryMuscles: slicesx.Map(ex.PrimaryMuscles, func(s string) openapi.PrimaryMuscle { return openapi.PrimaryMuscle(s) }),
+		Tags:           slicesx.Map(ex.Tags, func(s string) openapi.ExerciseTag { return openapi.ExerciseTag(s) }),
 		CreatedAt:      ex.CreatedAt,
 		UpdatedAt:      ex.UpdatedAt,
 	}
@@ -43,9 +41,9 @@ func ExerciseFromAPI(ex openapi.Exercise) mdl.Exercise {
 		Category:       string(ex.Category),
 		Description:    description,
 		Instructions:   ex.Instructions,
-		EquipmentTypes: slicesx.Map(ex.EquipmentTypes, func(e openapi.ExerciseEquipmentTypesItem) string { return string(e) }),
-		PrimaryMuscles: slicesx.Map(ex.PrimaryMuscles, func(m openapi.ExercisePrimaryMusclesItem) string { return string(m) }),
-		Tags:           slicesx.Map(ex.Tags, func(t openapi.ExerciseTagsItem) string { return string(t) }),
+		EquipmentTypes: slicesx.Map(ex.EquipmentTypes, func(e openapi.EquipmentType) string { return string(e) }),
+		PrimaryMuscles: slicesx.Map(ex.PrimaryMuscles, func(m openapi.PrimaryMuscle) string { return string(m) }),
+		Tags:           slicesx.Map(ex.Tags, func(t openapi.ExerciseTag) string { return string(t) }),
 		CreatedAt:      ex.CreatedAt,
 		UpdatedAt:      ex.UpdatedAt,
 	}
@@ -62,9 +60,16 @@ func ExerciseFilterFromAPI(params openapi.GetExercisesParams) mdl.ExerciseFilter
 		filter.Category = ptr.To(string(category))
 	}
 
-	if equipmentTypes, ok := params.EquipmentTypes.Get(); ok {
-		types := strings.Split(equipmentTypes, ",")
-		filter.EquipmentTypes = types
+	if len(params.EquipmentTypes) > 0 {
+		filter.EquipmentTypes = slicesx.Map(params.EquipmentTypes, func(e openapi.EquipmentType) string { return string(e) })
+	}
+
+	if len(params.PrimaryMuscles) > 0 {
+		filter.PrimaryMuscles = slicesx.Map(params.PrimaryMuscles, func(m openapi.PrimaryMuscle) string { return string(m) })
+	}
+
+	if len(params.Tags) > 0 {
+		filter.Tags = slicesx.Map(params.Tags, func(t openapi.ExerciseTag) string { return string(t) })
 	}
 
 	return filter

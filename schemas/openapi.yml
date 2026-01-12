@@ -4,6 +4,10 @@ info:
   description: Fitness application API
   version: 1.0.0
 
+servers:
+  - url: /api/v1
+    description: API version 1
+
 paths:
   /exercises:
     get:
@@ -22,14 +26,37 @@ paths:
           description: Filter by exercise category
           required: false
           schema:
-            type: string
-            enum: [cardio, strength, plyometric]
+            $ref: "#/components/schemas/ExerciseCategory"
         - name: equipmentTypes
           in: query
           description: Filter by equipment types (comma-separated)
           required: false
+          style: form
+          explode: false
           schema:
-            type: string
+            type: array
+            items:
+              $ref: "#/components/schemas/EquipmentType"
+        - name: primaryMuscles
+          in: query
+          description: Filter by primary muscles (comma-separated)
+          required: false
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/PrimaryMuscle"
+        - name: tags
+          in: query
+          description: Filter by tags (comma-separated)
+          required: false
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/ExerciseTag"
       responses:
         "200":
           description: List of exercises
@@ -70,8 +97,7 @@ components:
         name:
           type: string
         category:
-          type: string
-          enum: [cardio, strength, plyometric]
+          $ref: "#/components/schemas/ExerciseCategory"
         description:
           type: string
           nullable: true
@@ -82,18 +108,15 @@ components:
         equipmentTypes:
           type: array
           items:
-            type: string
-            enum: [bodyweight, kettlebell, rowing-machine, ski-erg, medicine-ball, dumbbells, barbell, sled, box, jump-rope, assault-bike]
+            $ref: "#/components/schemas/EquipmentType"
         primaryMuscles:
           type: array
           items:
-            type: string
-            enum: [chest, back, shoulders, biceps, triceps, forearms, core, abs, obliques, glutes, quads, hamstrings, calves, legs, full-body, grip]
+            $ref: "#/components/schemas/PrimaryMuscle"
         tags:
           type: array
           items:
-            type: string
-            enum: [crossfit, hyrox, beginner-friendly, advanced, conditioning, strength-endurance, power, core, functional, competition, plyometric]
+            $ref: "#/components/schemas/ExerciseTag"
         createdAt:
           type: string
           format: date-time
@@ -118,3 +141,19 @@ components:
       properties:
         error:
           type: string
+
+    ExerciseCategory:
+      type: string
+      enum: [cardio, strength, plyometric]
+
+    EquipmentType:
+      type: string
+      enum: [bodyweight, kettlebell, rowing-machine, ski-erg, medicine-ball, dumbbells, barbell, sled, box, jump-rope, assault-bike]
+
+    PrimaryMuscle:
+      type: string
+      enum: [chest, back, shoulders, biceps, triceps, forearms, core, abs, obliques, glutes, quads, hamstrings, calves, legs, full-body, grip]
+
+    ExerciseTag:
+      type: string
+      enum: [crossfit, hyrox, beginner-friendly, advanced, conditioning, strength-endurance, power, core, functional, competition, plyometric]

@@ -8,14 +8,7 @@ import (
 	"net/http"
 
 	"github.com/zorcal/sbgfit/backend/api/internal/openapi"
-	"github.com/zorcal/sbgfit/backend/internal/core/mdl"
 )
-
-//go:generate moq -rm -fmt goimports -out exercise_service_moq_test.go . ExerciseService:MockedExerciseServiced
-
-type ExerciseService interface {
-	Exercises(ctx context.Context, fltr mdl.ExerciseFilter) ([]mdl.Exercise, error)
-}
 
 type api struct {
 	log         *slog.Logger

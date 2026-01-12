@@ -9,6 +9,35 @@ import (
 	"github.com/ogen-go/ogen/validate"
 )
 
+func (s EquipmentType) Validate() error {
+	switch s {
+	case "bodyweight":
+		return nil
+	case "kettlebell":
+		return nil
+	case "rowing-machine":
+		return nil
+	case "ski-erg":
+		return nil
+	case "medicine-ball":
+		return nil
+	case "dumbbells":
+		return nil
+	case "barbell":
+		return nil
+	case "sled":
+		return nil
+	case "box":
+		return nil
+	case "jump-rope":
+		return nil
+	case "assault-bike":
+		return nil
+	default:
+		return errors.Errorf("invalid value: %v", s)
+	}
+}
+
 func (s *Exercise) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
@@ -129,74 +158,6 @@ func (s ExerciseCategory) Validate() error {
 	}
 }
 
-func (s ExerciseEquipmentTypesItem) Validate() error {
-	switch s {
-	case "bodyweight":
-		return nil
-	case "kettlebell":
-		return nil
-	case "rowing-machine":
-		return nil
-	case "ski-erg":
-		return nil
-	case "medicine-ball":
-		return nil
-	case "dumbbells":
-		return nil
-	case "barbell":
-		return nil
-	case "sled":
-		return nil
-	case "box":
-		return nil
-	case "jump-rope":
-		return nil
-	case "assault-bike":
-		return nil
-	default:
-		return errors.Errorf("invalid value: %v", s)
-	}
-}
-
-func (s ExercisePrimaryMusclesItem) Validate() error {
-	switch s {
-	case "chest":
-		return nil
-	case "back":
-		return nil
-	case "shoulders":
-		return nil
-	case "biceps":
-		return nil
-	case "triceps":
-		return nil
-	case "forearms":
-		return nil
-	case "core":
-		return nil
-	case "abs":
-		return nil
-	case "obliques":
-		return nil
-	case "glutes":
-		return nil
-	case "quads":
-		return nil
-	case "hamstrings":
-		return nil
-	case "calves":
-		return nil
-	case "legs":
-		return nil
-	case "full-body":
-		return nil
-	case "grip":
-		return nil
-	default:
-		return errors.Errorf("invalid value: %v", s)
-	}
-}
-
 func (s *ExerciseResponse) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
@@ -237,7 +198,7 @@ func (s *ExerciseResponse) Validate() error {
 	return nil
 }
 
-func (s ExerciseTagsItem) Validate() error {
+func (s ExerciseTag) Validate() error {
 	switch s {
 	case "crossfit":
 		return nil
@@ -266,13 +227,39 @@ func (s ExerciseTagsItem) Validate() error {
 	}
 }
 
-func (s GetExercisesCategory) Validate() error {
+func (s PrimaryMuscle) Validate() error {
 	switch s {
-	case "cardio":
+	case "chest":
 		return nil
-	case "strength":
+	case "back":
 		return nil
-	case "plyometric":
+	case "shoulders":
+		return nil
+	case "biceps":
+		return nil
+	case "triceps":
+		return nil
+	case "forearms":
+		return nil
+	case "core":
+		return nil
+	case "abs":
+		return nil
+	case "obliques":
+		return nil
+	case "glutes":
+		return nil
+	case "quads":
+		return nil
+	case "hamstrings":
+		return nil
+	case "calves":
+		return nil
+	case "legs":
+		return nil
+	case "full-body":
+		return nil
+	case "grip":
 		return nil
 	default:
 		return errors.Errorf("invalid value: %v", s)

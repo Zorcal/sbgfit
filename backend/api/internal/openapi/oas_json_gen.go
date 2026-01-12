@@ -12,6 +12,64 @@ import (
 	"github.com/ogen-go/ogen/validate"
 )
 
+// Encode encodes EquipmentType as json.
+func (s EquipmentType) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes EquipmentType from json.
+func (s *EquipmentType) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode EquipmentType to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch EquipmentType(v) {
+	case EquipmentTypeBodyweight:
+		*s = EquipmentTypeBodyweight
+	case EquipmentTypeKettlebell:
+		*s = EquipmentTypeKettlebell
+	case EquipmentTypeRowingMachine:
+		*s = EquipmentTypeRowingMachine
+	case EquipmentTypeSkiErg:
+		*s = EquipmentTypeSkiErg
+	case EquipmentTypeMedicineBall:
+		*s = EquipmentTypeMedicineBall
+	case EquipmentTypeDumbbells:
+		*s = EquipmentTypeDumbbells
+	case EquipmentTypeBarbell:
+		*s = EquipmentTypeBarbell
+	case EquipmentTypeSled:
+		*s = EquipmentTypeSled
+	case EquipmentTypeBox:
+		*s = EquipmentTypeBox
+	case EquipmentTypeJumpRope:
+		*s = EquipmentTypeJumpRope
+	case EquipmentTypeAssaultBike:
+		*s = EquipmentTypeAssaultBike
+	default:
+		*s = EquipmentType(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s EquipmentType) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *EquipmentType) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
 // Encode implements json.Marshaler.
 func (s *ErrorResponse) Encode(e *jx.Encoder) {
 	e.ObjStart()
@@ -267,9 +325,9 @@ func (s *Exercise) Decode(d *jx.Decoder) error {
 		case "equipmentTypes":
 			requiredBitSet[0] |= 1 << 5
 			if err := func() error {
-				s.EquipmentTypes = make([]ExerciseEquipmentTypesItem, 0)
+				s.EquipmentTypes = make([]EquipmentType, 0)
 				if err := d.Arr(func(d *jx.Decoder) error {
-					var elem ExerciseEquipmentTypesItem
+					var elem EquipmentType
 					if err := elem.Decode(d); err != nil {
 						return err
 					}
@@ -285,9 +343,9 @@ func (s *Exercise) Decode(d *jx.Decoder) error {
 		case "primaryMuscles":
 			requiredBitSet[0] |= 1 << 6
 			if err := func() error {
-				s.PrimaryMuscles = make([]ExercisePrimaryMusclesItem, 0)
+				s.PrimaryMuscles = make([]PrimaryMuscle, 0)
 				if err := d.Arr(func(d *jx.Decoder) error {
-					var elem ExercisePrimaryMusclesItem
+					var elem PrimaryMuscle
 					if err := elem.Decode(d); err != nil {
 						return err
 					}
@@ -303,9 +361,9 @@ func (s *Exercise) Decode(d *jx.Decoder) error {
 		case "tags":
 			requiredBitSet[0] |= 1 << 7
 			if err := func() error {
-				s.Tags = make([]ExerciseTagsItem, 0)
+				s.Tags = make([]ExerciseTag, 0)
 				if err := d.Arr(func(d *jx.Decoder) error {
-					var elem ExerciseTagsItem
+					var elem ExerciseTag
 					if err := elem.Decode(d); err != nil {
 						return err
 					}
@@ -441,132 +499,6 @@ func (s *ExerciseCategory) UnmarshalJSON(data []byte) error {
 	return s.Decode(d)
 }
 
-// Encode encodes ExerciseEquipmentTypesItem as json.
-func (s ExerciseEquipmentTypesItem) Encode(e *jx.Encoder) {
-	e.Str(string(s))
-}
-
-// Decode decodes ExerciseEquipmentTypesItem from json.
-func (s *ExerciseEquipmentTypesItem) Decode(d *jx.Decoder) error {
-	if s == nil {
-		return errors.New("invalid: unable to decode ExerciseEquipmentTypesItem to nil")
-	}
-	v, err := d.StrBytes()
-	if err != nil {
-		return err
-	}
-	// Try to use constant string.
-	switch ExerciseEquipmentTypesItem(v) {
-	case ExerciseEquipmentTypesItemBodyweight:
-		*s = ExerciseEquipmentTypesItemBodyweight
-	case ExerciseEquipmentTypesItemKettlebell:
-		*s = ExerciseEquipmentTypesItemKettlebell
-	case ExerciseEquipmentTypesItemRowingMachine:
-		*s = ExerciseEquipmentTypesItemRowingMachine
-	case ExerciseEquipmentTypesItemSkiErg:
-		*s = ExerciseEquipmentTypesItemSkiErg
-	case ExerciseEquipmentTypesItemMedicineBall:
-		*s = ExerciseEquipmentTypesItemMedicineBall
-	case ExerciseEquipmentTypesItemDumbbells:
-		*s = ExerciseEquipmentTypesItemDumbbells
-	case ExerciseEquipmentTypesItemBarbell:
-		*s = ExerciseEquipmentTypesItemBarbell
-	case ExerciseEquipmentTypesItemSled:
-		*s = ExerciseEquipmentTypesItemSled
-	case ExerciseEquipmentTypesItemBox:
-		*s = ExerciseEquipmentTypesItemBox
-	case ExerciseEquipmentTypesItemJumpRope:
-		*s = ExerciseEquipmentTypesItemJumpRope
-	case ExerciseEquipmentTypesItemAssaultBike:
-		*s = ExerciseEquipmentTypesItemAssaultBike
-	default:
-		*s = ExerciseEquipmentTypesItem(v)
-	}
-
-	return nil
-}
-
-// MarshalJSON implements stdjson.Marshaler.
-func (s ExerciseEquipmentTypesItem) MarshalJSON() ([]byte, error) {
-	e := jx.Encoder{}
-	s.Encode(&e)
-	return e.Bytes(), nil
-}
-
-// UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *ExerciseEquipmentTypesItem) UnmarshalJSON(data []byte) error {
-	d := jx.DecodeBytes(data)
-	return s.Decode(d)
-}
-
-// Encode encodes ExercisePrimaryMusclesItem as json.
-func (s ExercisePrimaryMusclesItem) Encode(e *jx.Encoder) {
-	e.Str(string(s))
-}
-
-// Decode decodes ExercisePrimaryMusclesItem from json.
-func (s *ExercisePrimaryMusclesItem) Decode(d *jx.Decoder) error {
-	if s == nil {
-		return errors.New("invalid: unable to decode ExercisePrimaryMusclesItem to nil")
-	}
-	v, err := d.StrBytes()
-	if err != nil {
-		return err
-	}
-	// Try to use constant string.
-	switch ExercisePrimaryMusclesItem(v) {
-	case ExercisePrimaryMusclesItemChest:
-		*s = ExercisePrimaryMusclesItemChest
-	case ExercisePrimaryMusclesItemBack:
-		*s = ExercisePrimaryMusclesItemBack
-	case ExercisePrimaryMusclesItemShoulders:
-		*s = ExercisePrimaryMusclesItemShoulders
-	case ExercisePrimaryMusclesItemBiceps:
-		*s = ExercisePrimaryMusclesItemBiceps
-	case ExercisePrimaryMusclesItemTriceps:
-		*s = ExercisePrimaryMusclesItemTriceps
-	case ExercisePrimaryMusclesItemForearms:
-		*s = ExercisePrimaryMusclesItemForearms
-	case ExercisePrimaryMusclesItemCore:
-		*s = ExercisePrimaryMusclesItemCore
-	case ExercisePrimaryMusclesItemAbs:
-		*s = ExercisePrimaryMusclesItemAbs
-	case ExercisePrimaryMusclesItemObliques:
-		*s = ExercisePrimaryMusclesItemObliques
-	case ExercisePrimaryMusclesItemGlutes:
-		*s = ExercisePrimaryMusclesItemGlutes
-	case ExercisePrimaryMusclesItemQuads:
-		*s = ExercisePrimaryMusclesItemQuads
-	case ExercisePrimaryMusclesItemHamstrings:
-		*s = ExercisePrimaryMusclesItemHamstrings
-	case ExercisePrimaryMusclesItemCalves:
-		*s = ExercisePrimaryMusclesItemCalves
-	case ExercisePrimaryMusclesItemLegs:
-		*s = ExercisePrimaryMusclesItemLegs
-	case ExercisePrimaryMusclesItemFullBody:
-		*s = ExercisePrimaryMusclesItemFullBody
-	case ExercisePrimaryMusclesItemGrip:
-		*s = ExercisePrimaryMusclesItemGrip
-	default:
-		*s = ExercisePrimaryMusclesItem(v)
-	}
-
-	return nil
-}
-
-// MarshalJSON implements stdjson.Marshaler.
-func (s ExercisePrimaryMusclesItem) MarshalJSON() ([]byte, error) {
-	e := jx.Encoder{}
-	s.Encode(&e)
-	return e.Bytes(), nil
-}
-
-// UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *ExercisePrimaryMusclesItem) UnmarshalJSON(data []byte) error {
-	d := jx.DecodeBytes(data)
-	return s.Decode(d)
-}
-
 // Encode implements json.Marshaler.
 func (s *ExerciseResponse) Encode(e *jx.Encoder) {
 	e.ObjStart()
@@ -673,60 +605,60 @@ func (s *ExerciseResponse) UnmarshalJSON(data []byte) error {
 	return s.Decode(d)
 }
 
-// Encode encodes ExerciseTagsItem as json.
-func (s ExerciseTagsItem) Encode(e *jx.Encoder) {
+// Encode encodes ExerciseTag as json.
+func (s ExerciseTag) Encode(e *jx.Encoder) {
 	e.Str(string(s))
 }
 
-// Decode decodes ExerciseTagsItem from json.
-func (s *ExerciseTagsItem) Decode(d *jx.Decoder) error {
+// Decode decodes ExerciseTag from json.
+func (s *ExerciseTag) Decode(d *jx.Decoder) error {
 	if s == nil {
-		return errors.New("invalid: unable to decode ExerciseTagsItem to nil")
+		return errors.New("invalid: unable to decode ExerciseTag to nil")
 	}
 	v, err := d.StrBytes()
 	if err != nil {
 		return err
 	}
 	// Try to use constant string.
-	switch ExerciseTagsItem(v) {
-	case ExerciseTagsItemCrossfit:
-		*s = ExerciseTagsItemCrossfit
-	case ExerciseTagsItemHyrox:
-		*s = ExerciseTagsItemHyrox
-	case ExerciseTagsItemBeginnerFriendly:
-		*s = ExerciseTagsItemBeginnerFriendly
-	case ExerciseTagsItemAdvanced:
-		*s = ExerciseTagsItemAdvanced
-	case ExerciseTagsItemConditioning:
-		*s = ExerciseTagsItemConditioning
-	case ExerciseTagsItemStrengthEndurance:
-		*s = ExerciseTagsItemStrengthEndurance
-	case ExerciseTagsItemPower:
-		*s = ExerciseTagsItemPower
-	case ExerciseTagsItemCore:
-		*s = ExerciseTagsItemCore
-	case ExerciseTagsItemFunctional:
-		*s = ExerciseTagsItemFunctional
-	case ExerciseTagsItemCompetition:
-		*s = ExerciseTagsItemCompetition
-	case ExerciseTagsItemPlyometric:
-		*s = ExerciseTagsItemPlyometric
+	switch ExerciseTag(v) {
+	case ExerciseTagCrossfit:
+		*s = ExerciseTagCrossfit
+	case ExerciseTagHyrox:
+		*s = ExerciseTagHyrox
+	case ExerciseTagBeginnerFriendly:
+		*s = ExerciseTagBeginnerFriendly
+	case ExerciseTagAdvanced:
+		*s = ExerciseTagAdvanced
+	case ExerciseTagConditioning:
+		*s = ExerciseTagConditioning
+	case ExerciseTagStrengthEndurance:
+		*s = ExerciseTagStrengthEndurance
+	case ExerciseTagPower:
+		*s = ExerciseTagPower
+	case ExerciseTagCore:
+		*s = ExerciseTagCore
+	case ExerciseTagFunctional:
+		*s = ExerciseTagFunctional
+	case ExerciseTagCompetition:
+		*s = ExerciseTagCompetition
+	case ExerciseTagPlyometric:
+		*s = ExerciseTagPlyometric
 	default:
-		*s = ExerciseTagsItem(v)
+		*s = ExerciseTag(v)
 	}
 
 	return nil
 }
 
 // MarshalJSON implements stdjson.Marshaler.
-func (s ExerciseTagsItem) MarshalJSON() ([]byte, error) {
+func (s ExerciseTag) MarshalJSON() ([]byte, error) {
 	e := jx.Encoder{}
 	s.Encode(&e)
 	return e.Bytes(), nil
 }
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
-func (s *ExerciseTagsItem) UnmarshalJSON(data []byte) error {
+func (s *ExerciseTag) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }
@@ -778,6 +710,74 @@ func (s OptNilString) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *OptNilString) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes PrimaryMuscle as json.
+func (s PrimaryMuscle) Encode(e *jx.Encoder) {
+	e.Str(string(s))
+}
+
+// Decode decodes PrimaryMuscle from json.
+func (s *PrimaryMuscle) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode PrimaryMuscle to nil")
+	}
+	v, err := d.StrBytes()
+	if err != nil {
+		return err
+	}
+	// Try to use constant string.
+	switch PrimaryMuscle(v) {
+	case PrimaryMuscleChest:
+		*s = PrimaryMuscleChest
+	case PrimaryMuscleBack:
+		*s = PrimaryMuscleBack
+	case PrimaryMuscleShoulders:
+		*s = PrimaryMuscleShoulders
+	case PrimaryMuscleBiceps:
+		*s = PrimaryMuscleBiceps
+	case PrimaryMuscleTriceps:
+		*s = PrimaryMuscleTriceps
+	case PrimaryMuscleForearms:
+		*s = PrimaryMuscleForearms
+	case PrimaryMuscleCore:
+		*s = PrimaryMuscleCore
+	case PrimaryMuscleAbs:
+		*s = PrimaryMuscleAbs
+	case PrimaryMuscleObliques:
+		*s = PrimaryMuscleObliques
+	case PrimaryMuscleGlutes:
+		*s = PrimaryMuscleGlutes
+	case PrimaryMuscleQuads:
+		*s = PrimaryMuscleQuads
+	case PrimaryMuscleHamstrings:
+		*s = PrimaryMuscleHamstrings
+	case PrimaryMuscleCalves:
+		*s = PrimaryMuscleCalves
+	case PrimaryMuscleLegs:
+		*s = PrimaryMuscleLegs
+	case PrimaryMuscleFullBody:
+		*s = PrimaryMuscleFullBody
+	case PrimaryMuscleGrip:
+		*s = PrimaryMuscleGrip
+	default:
+		*s = PrimaryMuscle(v)
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s PrimaryMuscle) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *PrimaryMuscle) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }

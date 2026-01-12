@@ -14,6 +14,111 @@ func (s *ErrorResponseStatusCode) Error() string {
 	return fmt.Sprintf("code %d: %+v", s.StatusCode, s.Response)
 }
 
+// Ref: #/components/schemas/EquipmentType
+type EquipmentType string
+
+const (
+	EquipmentTypeBodyweight    EquipmentType = "bodyweight"
+	EquipmentTypeKettlebell    EquipmentType = "kettlebell"
+	EquipmentTypeRowingMachine EquipmentType = "rowing-machine"
+	EquipmentTypeSkiErg        EquipmentType = "ski-erg"
+	EquipmentTypeMedicineBall  EquipmentType = "medicine-ball"
+	EquipmentTypeDumbbells     EquipmentType = "dumbbells"
+	EquipmentTypeBarbell       EquipmentType = "barbell"
+	EquipmentTypeSled          EquipmentType = "sled"
+	EquipmentTypeBox           EquipmentType = "box"
+	EquipmentTypeJumpRope      EquipmentType = "jump-rope"
+	EquipmentTypeAssaultBike   EquipmentType = "assault-bike"
+)
+
+// AllValues returns all EquipmentType values.
+func (EquipmentType) AllValues() []EquipmentType {
+	return []EquipmentType{
+		EquipmentTypeBodyweight,
+		EquipmentTypeKettlebell,
+		EquipmentTypeRowingMachine,
+		EquipmentTypeSkiErg,
+		EquipmentTypeMedicineBall,
+		EquipmentTypeDumbbells,
+		EquipmentTypeBarbell,
+		EquipmentTypeSled,
+		EquipmentTypeBox,
+		EquipmentTypeJumpRope,
+		EquipmentTypeAssaultBike,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s EquipmentType) MarshalText() ([]byte, error) {
+	switch s {
+	case EquipmentTypeBodyweight:
+		return []byte(s), nil
+	case EquipmentTypeKettlebell:
+		return []byte(s), nil
+	case EquipmentTypeRowingMachine:
+		return []byte(s), nil
+	case EquipmentTypeSkiErg:
+		return []byte(s), nil
+	case EquipmentTypeMedicineBall:
+		return []byte(s), nil
+	case EquipmentTypeDumbbells:
+		return []byte(s), nil
+	case EquipmentTypeBarbell:
+		return []byte(s), nil
+	case EquipmentTypeSled:
+		return []byte(s), nil
+	case EquipmentTypeBox:
+		return []byte(s), nil
+	case EquipmentTypeJumpRope:
+		return []byte(s), nil
+	case EquipmentTypeAssaultBike:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *EquipmentType) UnmarshalText(data []byte) error {
+	switch EquipmentType(data) {
+	case EquipmentTypeBodyweight:
+		*s = EquipmentTypeBodyweight
+		return nil
+	case EquipmentTypeKettlebell:
+		*s = EquipmentTypeKettlebell
+		return nil
+	case EquipmentTypeRowingMachine:
+		*s = EquipmentTypeRowingMachine
+		return nil
+	case EquipmentTypeSkiErg:
+		*s = EquipmentTypeSkiErg
+		return nil
+	case EquipmentTypeMedicineBall:
+		*s = EquipmentTypeMedicineBall
+		return nil
+	case EquipmentTypeDumbbells:
+		*s = EquipmentTypeDumbbells
+		return nil
+	case EquipmentTypeBarbell:
+		*s = EquipmentTypeBarbell
+		return nil
+	case EquipmentTypeSled:
+		*s = EquipmentTypeSled
+		return nil
+	case EquipmentTypeBox:
+		*s = EquipmentTypeBox
+		return nil
+	case EquipmentTypeJumpRope:
+		*s = EquipmentTypeJumpRope
+		return nil
+	case EquipmentTypeAssaultBike:
+		*s = EquipmentTypeAssaultBike
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
+}
+
 // Ref: #/components/schemas/ErrorResponse
 type ErrorResponse struct {
 	Error string `json:"error"`
@@ -59,16 +164,16 @@ func (s *ErrorResponseStatusCode) SetResponse(val ErrorResponse) {
 
 // Ref: #/components/schemas/Exercise
 type Exercise struct {
-	ID             uuid.UUID                    `json:"id"`
-	Name           string                       `json:"name"`
-	Category       ExerciseCategory             `json:"category"`
-	Description    OptNilString                 `json:"description"`
-	Instructions   []string                     `json:"instructions"`
-	EquipmentTypes []ExerciseEquipmentTypesItem `json:"equipmentTypes"`
-	PrimaryMuscles []ExercisePrimaryMusclesItem `json:"primaryMuscles"`
-	Tags           []ExerciseTagsItem           `json:"tags"`
-	CreatedAt      time.Time                    `json:"createdAt"`
-	UpdatedAt      time.Time                    `json:"updatedAt"`
+	ID             uuid.UUID        `json:"id"`
+	Name           string           `json:"name"`
+	Category       ExerciseCategory `json:"category"`
+	Description    OptNilString     `json:"description"`
+	Instructions   []string         `json:"instructions"`
+	EquipmentTypes []EquipmentType  `json:"equipmentTypes"`
+	PrimaryMuscles []PrimaryMuscle  `json:"primaryMuscles"`
+	Tags           []ExerciseTag    `json:"tags"`
+	CreatedAt      time.Time        `json:"createdAt"`
+	UpdatedAt      time.Time        `json:"updatedAt"`
 }
 
 // GetID returns the value of ID.
@@ -97,17 +202,17 @@ func (s *Exercise) GetInstructions() []string {
 }
 
 // GetEquipmentTypes returns the value of EquipmentTypes.
-func (s *Exercise) GetEquipmentTypes() []ExerciseEquipmentTypesItem {
+func (s *Exercise) GetEquipmentTypes() []EquipmentType {
 	return s.EquipmentTypes
 }
 
 // GetPrimaryMuscles returns the value of PrimaryMuscles.
-func (s *Exercise) GetPrimaryMuscles() []ExercisePrimaryMusclesItem {
+func (s *Exercise) GetPrimaryMuscles() []PrimaryMuscle {
 	return s.PrimaryMuscles
 }
 
 // GetTags returns the value of Tags.
-func (s *Exercise) GetTags() []ExerciseTagsItem {
+func (s *Exercise) GetTags() []ExerciseTag {
 	return s.Tags
 }
 
@@ -147,17 +252,17 @@ func (s *Exercise) SetInstructions(val []string) {
 }
 
 // SetEquipmentTypes sets the value of EquipmentTypes.
-func (s *Exercise) SetEquipmentTypes(val []ExerciseEquipmentTypesItem) {
+func (s *Exercise) SetEquipmentTypes(val []EquipmentType) {
 	s.EquipmentTypes = val
 }
 
 // SetPrimaryMuscles sets the value of PrimaryMuscles.
-func (s *Exercise) SetPrimaryMuscles(val []ExercisePrimaryMusclesItem) {
+func (s *Exercise) SetPrimaryMuscles(val []PrimaryMuscle) {
 	s.PrimaryMuscles = val
 }
 
 // SetTags sets the value of Tags.
-func (s *Exercise) SetTags(val []ExerciseTagsItem) {
+func (s *Exercise) SetTags(val []ExerciseTag) {
 	s.Tags = val
 }
 
@@ -171,6 +276,7 @@ func (s *Exercise) SetUpdatedAt(val time.Time) {
 	s.UpdatedAt = val
 }
 
+// Ref: #/components/schemas/ExerciseCategory
 type ExerciseCategory string
 
 const (
@@ -219,249 +325,6 @@ func (s *ExerciseCategory) UnmarshalText(data []byte) error {
 	}
 }
 
-type ExerciseEquipmentTypesItem string
-
-const (
-	ExerciseEquipmentTypesItemBodyweight    ExerciseEquipmentTypesItem = "bodyweight"
-	ExerciseEquipmentTypesItemKettlebell    ExerciseEquipmentTypesItem = "kettlebell"
-	ExerciseEquipmentTypesItemRowingMachine ExerciseEquipmentTypesItem = "rowing-machine"
-	ExerciseEquipmentTypesItemSkiErg        ExerciseEquipmentTypesItem = "ski-erg"
-	ExerciseEquipmentTypesItemMedicineBall  ExerciseEquipmentTypesItem = "medicine-ball"
-	ExerciseEquipmentTypesItemDumbbells     ExerciseEquipmentTypesItem = "dumbbells"
-	ExerciseEquipmentTypesItemBarbell       ExerciseEquipmentTypesItem = "barbell"
-	ExerciseEquipmentTypesItemSled          ExerciseEquipmentTypesItem = "sled"
-	ExerciseEquipmentTypesItemBox           ExerciseEquipmentTypesItem = "box"
-	ExerciseEquipmentTypesItemJumpRope      ExerciseEquipmentTypesItem = "jump-rope"
-	ExerciseEquipmentTypesItemAssaultBike   ExerciseEquipmentTypesItem = "assault-bike"
-)
-
-// AllValues returns all ExerciseEquipmentTypesItem values.
-func (ExerciseEquipmentTypesItem) AllValues() []ExerciseEquipmentTypesItem {
-	return []ExerciseEquipmentTypesItem{
-		ExerciseEquipmentTypesItemBodyweight,
-		ExerciseEquipmentTypesItemKettlebell,
-		ExerciseEquipmentTypesItemRowingMachine,
-		ExerciseEquipmentTypesItemSkiErg,
-		ExerciseEquipmentTypesItemMedicineBall,
-		ExerciseEquipmentTypesItemDumbbells,
-		ExerciseEquipmentTypesItemBarbell,
-		ExerciseEquipmentTypesItemSled,
-		ExerciseEquipmentTypesItemBox,
-		ExerciseEquipmentTypesItemJumpRope,
-		ExerciseEquipmentTypesItemAssaultBike,
-	}
-}
-
-// MarshalText implements encoding.TextMarshaler.
-func (s ExerciseEquipmentTypesItem) MarshalText() ([]byte, error) {
-	switch s {
-	case ExerciseEquipmentTypesItemBodyweight:
-		return []byte(s), nil
-	case ExerciseEquipmentTypesItemKettlebell:
-		return []byte(s), nil
-	case ExerciseEquipmentTypesItemRowingMachine:
-		return []byte(s), nil
-	case ExerciseEquipmentTypesItemSkiErg:
-		return []byte(s), nil
-	case ExerciseEquipmentTypesItemMedicineBall:
-		return []byte(s), nil
-	case ExerciseEquipmentTypesItemDumbbells:
-		return []byte(s), nil
-	case ExerciseEquipmentTypesItemBarbell:
-		return []byte(s), nil
-	case ExerciseEquipmentTypesItemSled:
-		return []byte(s), nil
-	case ExerciseEquipmentTypesItemBox:
-		return []byte(s), nil
-	case ExerciseEquipmentTypesItemJumpRope:
-		return []byte(s), nil
-	case ExerciseEquipmentTypesItemAssaultBike:
-		return []byte(s), nil
-	default:
-		return nil, errors.Errorf("invalid value: %q", s)
-	}
-}
-
-// UnmarshalText implements encoding.TextUnmarshaler.
-func (s *ExerciseEquipmentTypesItem) UnmarshalText(data []byte) error {
-	switch ExerciseEquipmentTypesItem(data) {
-	case ExerciseEquipmentTypesItemBodyweight:
-		*s = ExerciseEquipmentTypesItemBodyweight
-		return nil
-	case ExerciseEquipmentTypesItemKettlebell:
-		*s = ExerciseEquipmentTypesItemKettlebell
-		return nil
-	case ExerciseEquipmentTypesItemRowingMachine:
-		*s = ExerciseEquipmentTypesItemRowingMachine
-		return nil
-	case ExerciseEquipmentTypesItemSkiErg:
-		*s = ExerciseEquipmentTypesItemSkiErg
-		return nil
-	case ExerciseEquipmentTypesItemMedicineBall:
-		*s = ExerciseEquipmentTypesItemMedicineBall
-		return nil
-	case ExerciseEquipmentTypesItemDumbbells:
-		*s = ExerciseEquipmentTypesItemDumbbells
-		return nil
-	case ExerciseEquipmentTypesItemBarbell:
-		*s = ExerciseEquipmentTypesItemBarbell
-		return nil
-	case ExerciseEquipmentTypesItemSled:
-		*s = ExerciseEquipmentTypesItemSled
-		return nil
-	case ExerciseEquipmentTypesItemBox:
-		*s = ExerciseEquipmentTypesItemBox
-		return nil
-	case ExerciseEquipmentTypesItemJumpRope:
-		*s = ExerciseEquipmentTypesItemJumpRope
-		return nil
-	case ExerciseEquipmentTypesItemAssaultBike:
-		*s = ExerciseEquipmentTypesItemAssaultBike
-		return nil
-	default:
-		return errors.Errorf("invalid value: %q", data)
-	}
-}
-
-type ExercisePrimaryMusclesItem string
-
-const (
-	ExercisePrimaryMusclesItemChest      ExercisePrimaryMusclesItem = "chest"
-	ExercisePrimaryMusclesItemBack       ExercisePrimaryMusclesItem = "back"
-	ExercisePrimaryMusclesItemShoulders  ExercisePrimaryMusclesItem = "shoulders"
-	ExercisePrimaryMusclesItemBiceps     ExercisePrimaryMusclesItem = "biceps"
-	ExercisePrimaryMusclesItemTriceps    ExercisePrimaryMusclesItem = "triceps"
-	ExercisePrimaryMusclesItemForearms   ExercisePrimaryMusclesItem = "forearms"
-	ExercisePrimaryMusclesItemCore       ExercisePrimaryMusclesItem = "core"
-	ExercisePrimaryMusclesItemAbs        ExercisePrimaryMusclesItem = "abs"
-	ExercisePrimaryMusclesItemObliques   ExercisePrimaryMusclesItem = "obliques"
-	ExercisePrimaryMusclesItemGlutes     ExercisePrimaryMusclesItem = "glutes"
-	ExercisePrimaryMusclesItemQuads      ExercisePrimaryMusclesItem = "quads"
-	ExercisePrimaryMusclesItemHamstrings ExercisePrimaryMusclesItem = "hamstrings"
-	ExercisePrimaryMusclesItemCalves     ExercisePrimaryMusclesItem = "calves"
-	ExercisePrimaryMusclesItemLegs       ExercisePrimaryMusclesItem = "legs"
-	ExercisePrimaryMusclesItemFullBody   ExercisePrimaryMusclesItem = "full-body"
-	ExercisePrimaryMusclesItemGrip       ExercisePrimaryMusclesItem = "grip"
-)
-
-// AllValues returns all ExercisePrimaryMusclesItem values.
-func (ExercisePrimaryMusclesItem) AllValues() []ExercisePrimaryMusclesItem {
-	return []ExercisePrimaryMusclesItem{
-		ExercisePrimaryMusclesItemChest,
-		ExercisePrimaryMusclesItemBack,
-		ExercisePrimaryMusclesItemShoulders,
-		ExercisePrimaryMusclesItemBiceps,
-		ExercisePrimaryMusclesItemTriceps,
-		ExercisePrimaryMusclesItemForearms,
-		ExercisePrimaryMusclesItemCore,
-		ExercisePrimaryMusclesItemAbs,
-		ExercisePrimaryMusclesItemObliques,
-		ExercisePrimaryMusclesItemGlutes,
-		ExercisePrimaryMusclesItemQuads,
-		ExercisePrimaryMusclesItemHamstrings,
-		ExercisePrimaryMusclesItemCalves,
-		ExercisePrimaryMusclesItemLegs,
-		ExercisePrimaryMusclesItemFullBody,
-		ExercisePrimaryMusclesItemGrip,
-	}
-}
-
-// MarshalText implements encoding.TextMarshaler.
-func (s ExercisePrimaryMusclesItem) MarshalText() ([]byte, error) {
-	switch s {
-	case ExercisePrimaryMusclesItemChest:
-		return []byte(s), nil
-	case ExercisePrimaryMusclesItemBack:
-		return []byte(s), nil
-	case ExercisePrimaryMusclesItemShoulders:
-		return []byte(s), nil
-	case ExercisePrimaryMusclesItemBiceps:
-		return []byte(s), nil
-	case ExercisePrimaryMusclesItemTriceps:
-		return []byte(s), nil
-	case ExercisePrimaryMusclesItemForearms:
-		return []byte(s), nil
-	case ExercisePrimaryMusclesItemCore:
-		return []byte(s), nil
-	case ExercisePrimaryMusclesItemAbs:
-		return []byte(s), nil
-	case ExercisePrimaryMusclesItemObliques:
-		return []byte(s), nil
-	case ExercisePrimaryMusclesItemGlutes:
-		return []byte(s), nil
-	case ExercisePrimaryMusclesItemQuads:
-		return []byte(s), nil
-	case ExercisePrimaryMusclesItemHamstrings:
-		return []byte(s), nil
-	case ExercisePrimaryMusclesItemCalves:
-		return []byte(s), nil
-	case ExercisePrimaryMusclesItemLegs:
-		return []byte(s), nil
-	case ExercisePrimaryMusclesItemFullBody:
-		return []byte(s), nil
-	case ExercisePrimaryMusclesItemGrip:
-		return []byte(s), nil
-	default:
-		return nil, errors.Errorf("invalid value: %q", s)
-	}
-}
-
-// UnmarshalText implements encoding.TextUnmarshaler.
-func (s *ExercisePrimaryMusclesItem) UnmarshalText(data []byte) error {
-	switch ExercisePrimaryMusclesItem(data) {
-	case ExercisePrimaryMusclesItemChest:
-		*s = ExercisePrimaryMusclesItemChest
-		return nil
-	case ExercisePrimaryMusclesItemBack:
-		*s = ExercisePrimaryMusclesItemBack
-		return nil
-	case ExercisePrimaryMusclesItemShoulders:
-		*s = ExercisePrimaryMusclesItemShoulders
-		return nil
-	case ExercisePrimaryMusclesItemBiceps:
-		*s = ExercisePrimaryMusclesItemBiceps
-		return nil
-	case ExercisePrimaryMusclesItemTriceps:
-		*s = ExercisePrimaryMusclesItemTriceps
-		return nil
-	case ExercisePrimaryMusclesItemForearms:
-		*s = ExercisePrimaryMusclesItemForearms
-		return nil
-	case ExercisePrimaryMusclesItemCore:
-		*s = ExercisePrimaryMusclesItemCore
-		return nil
-	case ExercisePrimaryMusclesItemAbs:
-		*s = ExercisePrimaryMusclesItemAbs
-		return nil
-	case ExercisePrimaryMusclesItemObliques:
-		*s = ExercisePrimaryMusclesItemObliques
-		return nil
-	case ExercisePrimaryMusclesItemGlutes:
-		*s = ExercisePrimaryMusclesItemGlutes
-		return nil
-	case ExercisePrimaryMusclesItemQuads:
-		*s = ExercisePrimaryMusclesItemQuads
-		return nil
-	case ExercisePrimaryMusclesItemHamstrings:
-		*s = ExercisePrimaryMusclesItemHamstrings
-		return nil
-	case ExercisePrimaryMusclesItemCalves:
-		*s = ExercisePrimaryMusclesItemCalves
-		return nil
-	case ExercisePrimaryMusclesItemLegs:
-		*s = ExercisePrimaryMusclesItemLegs
-		return nil
-	case ExercisePrimaryMusclesItemFullBody:
-		*s = ExercisePrimaryMusclesItemFullBody
-		return nil
-	case ExercisePrimaryMusclesItemGrip:
-		*s = ExercisePrimaryMusclesItemGrip
-		return nil
-	default:
-		return errors.Errorf("invalid value: %q", data)
-	}
-}
-
 // Ref: #/components/schemas/ExerciseResponse
 type ExerciseResponse struct {
 	Data []Exercise `json:"data"`
@@ -479,63 +342,64 @@ func (s *ExerciseResponse) SetData(val []Exercise) {
 
 func (*ExerciseResponse) getExercisesRes() {}
 
-type ExerciseTagsItem string
+// Ref: #/components/schemas/ExerciseTag
+type ExerciseTag string
 
 const (
-	ExerciseTagsItemCrossfit          ExerciseTagsItem = "crossfit"
-	ExerciseTagsItemHyrox             ExerciseTagsItem = "hyrox"
-	ExerciseTagsItemBeginnerFriendly  ExerciseTagsItem = "beginner-friendly"
-	ExerciseTagsItemAdvanced          ExerciseTagsItem = "advanced"
-	ExerciseTagsItemConditioning      ExerciseTagsItem = "conditioning"
-	ExerciseTagsItemStrengthEndurance ExerciseTagsItem = "strength-endurance"
-	ExerciseTagsItemPower             ExerciseTagsItem = "power"
-	ExerciseTagsItemCore              ExerciseTagsItem = "core"
-	ExerciseTagsItemFunctional        ExerciseTagsItem = "functional"
-	ExerciseTagsItemCompetition       ExerciseTagsItem = "competition"
-	ExerciseTagsItemPlyometric        ExerciseTagsItem = "plyometric"
+	ExerciseTagCrossfit          ExerciseTag = "crossfit"
+	ExerciseTagHyrox             ExerciseTag = "hyrox"
+	ExerciseTagBeginnerFriendly  ExerciseTag = "beginner-friendly"
+	ExerciseTagAdvanced          ExerciseTag = "advanced"
+	ExerciseTagConditioning      ExerciseTag = "conditioning"
+	ExerciseTagStrengthEndurance ExerciseTag = "strength-endurance"
+	ExerciseTagPower             ExerciseTag = "power"
+	ExerciseTagCore              ExerciseTag = "core"
+	ExerciseTagFunctional        ExerciseTag = "functional"
+	ExerciseTagCompetition       ExerciseTag = "competition"
+	ExerciseTagPlyometric        ExerciseTag = "plyometric"
 )
 
-// AllValues returns all ExerciseTagsItem values.
-func (ExerciseTagsItem) AllValues() []ExerciseTagsItem {
-	return []ExerciseTagsItem{
-		ExerciseTagsItemCrossfit,
-		ExerciseTagsItemHyrox,
-		ExerciseTagsItemBeginnerFriendly,
-		ExerciseTagsItemAdvanced,
-		ExerciseTagsItemConditioning,
-		ExerciseTagsItemStrengthEndurance,
-		ExerciseTagsItemPower,
-		ExerciseTagsItemCore,
-		ExerciseTagsItemFunctional,
-		ExerciseTagsItemCompetition,
-		ExerciseTagsItemPlyometric,
+// AllValues returns all ExerciseTag values.
+func (ExerciseTag) AllValues() []ExerciseTag {
+	return []ExerciseTag{
+		ExerciseTagCrossfit,
+		ExerciseTagHyrox,
+		ExerciseTagBeginnerFriendly,
+		ExerciseTagAdvanced,
+		ExerciseTagConditioning,
+		ExerciseTagStrengthEndurance,
+		ExerciseTagPower,
+		ExerciseTagCore,
+		ExerciseTagFunctional,
+		ExerciseTagCompetition,
+		ExerciseTagPlyometric,
 	}
 }
 
 // MarshalText implements encoding.TextMarshaler.
-func (s ExerciseTagsItem) MarshalText() ([]byte, error) {
+func (s ExerciseTag) MarshalText() ([]byte, error) {
 	switch s {
-	case ExerciseTagsItemCrossfit:
+	case ExerciseTagCrossfit:
 		return []byte(s), nil
-	case ExerciseTagsItemHyrox:
+	case ExerciseTagHyrox:
 		return []byte(s), nil
-	case ExerciseTagsItemBeginnerFriendly:
+	case ExerciseTagBeginnerFriendly:
 		return []byte(s), nil
-	case ExerciseTagsItemAdvanced:
+	case ExerciseTagAdvanced:
 		return []byte(s), nil
-	case ExerciseTagsItemConditioning:
+	case ExerciseTagConditioning:
 		return []byte(s), nil
-	case ExerciseTagsItemStrengthEndurance:
+	case ExerciseTagStrengthEndurance:
 		return []byte(s), nil
-	case ExerciseTagsItemPower:
+	case ExerciseTagPower:
 		return []byte(s), nil
-	case ExerciseTagsItemCore:
+	case ExerciseTagCore:
 		return []byte(s), nil
-	case ExerciseTagsItemFunctional:
+	case ExerciseTagFunctional:
 		return []byte(s), nil
-	case ExerciseTagsItemCompetition:
+	case ExerciseTagCompetition:
 		return []byte(s), nil
-	case ExerciseTagsItemPlyometric:
+	case ExerciseTagPlyometric:
 		return []byte(s), nil
 	default:
 		return nil, errors.Errorf("invalid value: %q", s)
@@ -543,126 +407,78 @@ func (s ExerciseTagsItem) MarshalText() ([]byte, error) {
 }
 
 // UnmarshalText implements encoding.TextUnmarshaler.
-func (s *ExerciseTagsItem) UnmarshalText(data []byte) error {
-	switch ExerciseTagsItem(data) {
-	case ExerciseTagsItemCrossfit:
-		*s = ExerciseTagsItemCrossfit
+func (s *ExerciseTag) UnmarshalText(data []byte) error {
+	switch ExerciseTag(data) {
+	case ExerciseTagCrossfit:
+		*s = ExerciseTagCrossfit
 		return nil
-	case ExerciseTagsItemHyrox:
-		*s = ExerciseTagsItemHyrox
+	case ExerciseTagHyrox:
+		*s = ExerciseTagHyrox
 		return nil
-	case ExerciseTagsItemBeginnerFriendly:
-		*s = ExerciseTagsItemBeginnerFriendly
+	case ExerciseTagBeginnerFriendly:
+		*s = ExerciseTagBeginnerFriendly
 		return nil
-	case ExerciseTagsItemAdvanced:
-		*s = ExerciseTagsItemAdvanced
+	case ExerciseTagAdvanced:
+		*s = ExerciseTagAdvanced
 		return nil
-	case ExerciseTagsItemConditioning:
-		*s = ExerciseTagsItemConditioning
+	case ExerciseTagConditioning:
+		*s = ExerciseTagConditioning
 		return nil
-	case ExerciseTagsItemStrengthEndurance:
-		*s = ExerciseTagsItemStrengthEndurance
+	case ExerciseTagStrengthEndurance:
+		*s = ExerciseTagStrengthEndurance
 		return nil
-	case ExerciseTagsItemPower:
-		*s = ExerciseTagsItemPower
+	case ExerciseTagPower:
+		*s = ExerciseTagPower
 		return nil
-	case ExerciseTagsItemCore:
-		*s = ExerciseTagsItemCore
+	case ExerciseTagCore:
+		*s = ExerciseTagCore
 		return nil
-	case ExerciseTagsItemFunctional:
-		*s = ExerciseTagsItemFunctional
+	case ExerciseTagFunctional:
+		*s = ExerciseTagFunctional
 		return nil
-	case ExerciseTagsItemCompetition:
-		*s = ExerciseTagsItemCompetition
+	case ExerciseTagCompetition:
+		*s = ExerciseTagCompetition
 		return nil
-	case ExerciseTagsItemPlyometric:
-		*s = ExerciseTagsItemPlyometric
-		return nil
-	default:
-		return errors.Errorf("invalid value: %q", data)
-	}
-}
-
-type GetExercisesCategory string
-
-const (
-	GetExercisesCategoryCardio     GetExercisesCategory = "cardio"
-	GetExercisesCategoryStrength   GetExercisesCategory = "strength"
-	GetExercisesCategoryPlyometric GetExercisesCategory = "plyometric"
-)
-
-// AllValues returns all GetExercisesCategory values.
-func (GetExercisesCategory) AllValues() []GetExercisesCategory {
-	return []GetExercisesCategory{
-		GetExercisesCategoryCardio,
-		GetExercisesCategoryStrength,
-		GetExercisesCategoryPlyometric,
-	}
-}
-
-// MarshalText implements encoding.TextMarshaler.
-func (s GetExercisesCategory) MarshalText() ([]byte, error) {
-	switch s {
-	case GetExercisesCategoryCardio:
-		return []byte(s), nil
-	case GetExercisesCategoryStrength:
-		return []byte(s), nil
-	case GetExercisesCategoryPlyometric:
-		return []byte(s), nil
-	default:
-		return nil, errors.Errorf("invalid value: %q", s)
-	}
-}
-
-// UnmarshalText implements encoding.TextUnmarshaler.
-func (s *GetExercisesCategory) UnmarshalText(data []byte) error {
-	switch GetExercisesCategory(data) {
-	case GetExercisesCategoryCardio:
-		*s = GetExercisesCategoryCardio
-		return nil
-	case GetExercisesCategoryStrength:
-		*s = GetExercisesCategoryStrength
-		return nil
-	case GetExercisesCategoryPlyometric:
-		*s = GetExercisesCategoryPlyometric
+	case ExerciseTagPlyometric:
+		*s = ExerciseTagPlyometric
 		return nil
 	default:
 		return errors.Errorf("invalid value: %q", data)
 	}
 }
 
-// NewOptGetExercisesCategory returns new OptGetExercisesCategory with value set to v.
-func NewOptGetExercisesCategory(v GetExercisesCategory) OptGetExercisesCategory {
-	return OptGetExercisesCategory{
+// NewOptExerciseCategory returns new OptExerciseCategory with value set to v.
+func NewOptExerciseCategory(v ExerciseCategory) OptExerciseCategory {
+	return OptExerciseCategory{
 		Value: v,
 		Set:   true,
 	}
 }
 
-// OptGetExercisesCategory is optional GetExercisesCategory.
-type OptGetExercisesCategory struct {
-	Value GetExercisesCategory
+// OptExerciseCategory is optional ExerciseCategory.
+type OptExerciseCategory struct {
+	Value ExerciseCategory
 	Set   bool
 }
 
-// IsSet returns true if OptGetExercisesCategory was set.
-func (o OptGetExercisesCategory) IsSet() bool { return o.Set }
+// IsSet returns true if OptExerciseCategory was set.
+func (o OptExerciseCategory) IsSet() bool { return o.Set }
 
 // Reset unsets value.
-func (o *OptGetExercisesCategory) Reset() {
-	var v GetExercisesCategory
+func (o *OptExerciseCategory) Reset() {
+	var v ExerciseCategory
 	o.Value = v
 	o.Set = false
 }
 
 // SetTo sets value to v.
-func (o *OptGetExercisesCategory) SetTo(v GetExercisesCategory) {
+func (o *OptExerciseCategory) SetTo(v ExerciseCategory) {
 	o.Set = true
 	o.Value = v
 }
 
 // Get returns value and boolean that denotes whether value was set.
-func (o OptGetExercisesCategory) Get() (v GetExercisesCategory, ok bool) {
+func (o OptExerciseCategory) Get() (v ExerciseCategory, ok bool) {
 	if !o.Set {
 		return v, false
 	}
@@ -670,7 +486,7 @@ func (o OptGetExercisesCategory) Get() (v GetExercisesCategory, ok bool) {
 }
 
 // Or returns value if set, or given parameter if does not.
-func (o OptGetExercisesCategory) Or(d GetExercisesCategory) GetExercisesCategory {
+func (o OptExerciseCategory) Or(d ExerciseCategory) ExerciseCategory {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -784,4 +600,144 @@ func (o OptString) Or(d string) string {
 		return v
 	}
 	return d
+}
+
+// Ref: #/components/schemas/PrimaryMuscle
+type PrimaryMuscle string
+
+const (
+	PrimaryMuscleChest      PrimaryMuscle = "chest"
+	PrimaryMuscleBack       PrimaryMuscle = "back"
+	PrimaryMuscleShoulders  PrimaryMuscle = "shoulders"
+	PrimaryMuscleBiceps     PrimaryMuscle = "biceps"
+	PrimaryMuscleTriceps    PrimaryMuscle = "triceps"
+	PrimaryMuscleForearms   PrimaryMuscle = "forearms"
+	PrimaryMuscleCore       PrimaryMuscle = "core"
+	PrimaryMuscleAbs        PrimaryMuscle = "abs"
+	PrimaryMuscleObliques   PrimaryMuscle = "obliques"
+	PrimaryMuscleGlutes     PrimaryMuscle = "glutes"
+	PrimaryMuscleQuads      PrimaryMuscle = "quads"
+	PrimaryMuscleHamstrings PrimaryMuscle = "hamstrings"
+	PrimaryMuscleCalves     PrimaryMuscle = "calves"
+	PrimaryMuscleLegs       PrimaryMuscle = "legs"
+	PrimaryMuscleFullBody   PrimaryMuscle = "full-body"
+	PrimaryMuscleGrip       PrimaryMuscle = "grip"
+)
+
+// AllValues returns all PrimaryMuscle values.
+func (PrimaryMuscle) AllValues() []PrimaryMuscle {
+	return []PrimaryMuscle{
+		PrimaryMuscleChest,
+		PrimaryMuscleBack,
+		PrimaryMuscleShoulders,
+		PrimaryMuscleBiceps,
+		PrimaryMuscleTriceps,
+		PrimaryMuscleForearms,
+		PrimaryMuscleCore,
+		PrimaryMuscleAbs,
+		PrimaryMuscleObliques,
+		PrimaryMuscleGlutes,
+		PrimaryMuscleQuads,
+		PrimaryMuscleHamstrings,
+		PrimaryMuscleCalves,
+		PrimaryMuscleLegs,
+		PrimaryMuscleFullBody,
+		PrimaryMuscleGrip,
+	}
+}
+
+// MarshalText implements encoding.TextMarshaler.
+func (s PrimaryMuscle) MarshalText() ([]byte, error) {
+	switch s {
+	case PrimaryMuscleChest:
+		return []byte(s), nil
+	case PrimaryMuscleBack:
+		return []byte(s), nil
+	case PrimaryMuscleShoulders:
+		return []byte(s), nil
+	case PrimaryMuscleBiceps:
+		return []byte(s), nil
+	case PrimaryMuscleTriceps:
+		return []byte(s), nil
+	case PrimaryMuscleForearms:
+		return []byte(s), nil
+	case PrimaryMuscleCore:
+		return []byte(s), nil
+	case PrimaryMuscleAbs:
+		return []byte(s), nil
+	case PrimaryMuscleObliques:
+		return []byte(s), nil
+	case PrimaryMuscleGlutes:
+		return []byte(s), nil
+	case PrimaryMuscleQuads:
+		return []byte(s), nil
+	case PrimaryMuscleHamstrings:
+		return []byte(s), nil
+	case PrimaryMuscleCalves:
+		return []byte(s), nil
+	case PrimaryMuscleLegs:
+		return []byte(s), nil
+	case PrimaryMuscleFullBody:
+		return []byte(s), nil
+	case PrimaryMuscleGrip:
+		return []byte(s), nil
+	default:
+		return nil, errors.Errorf("invalid value: %q", s)
+	}
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler.
+func (s *PrimaryMuscle) UnmarshalText(data []byte) error {
+	switch PrimaryMuscle(data) {
+	case PrimaryMuscleChest:
+		*s = PrimaryMuscleChest
+		return nil
+	case PrimaryMuscleBack:
+		*s = PrimaryMuscleBack
+		return nil
+	case PrimaryMuscleShoulders:
+		*s = PrimaryMuscleShoulders
+		return nil
+	case PrimaryMuscleBiceps:
+		*s = PrimaryMuscleBiceps
+		return nil
+	case PrimaryMuscleTriceps:
+		*s = PrimaryMuscleTriceps
+		return nil
+	case PrimaryMuscleForearms:
+		*s = PrimaryMuscleForearms
+		return nil
+	case PrimaryMuscleCore:
+		*s = PrimaryMuscleCore
+		return nil
+	case PrimaryMuscleAbs:
+		*s = PrimaryMuscleAbs
+		return nil
+	case PrimaryMuscleObliques:
+		*s = PrimaryMuscleObliques
+		return nil
+	case PrimaryMuscleGlutes:
+		*s = PrimaryMuscleGlutes
+		return nil
+	case PrimaryMuscleQuads:
+		*s = PrimaryMuscleQuads
+		return nil
+	case PrimaryMuscleHamstrings:
+		*s = PrimaryMuscleHamstrings
+		return nil
+	case PrimaryMuscleCalves:
+		*s = PrimaryMuscleCalves
+		return nil
+	case PrimaryMuscleLegs:
+		*s = PrimaryMuscleLegs
+		return nil
+	case PrimaryMuscleFullBody:
+		*s = PrimaryMuscleFullBody
+		return nil
+	case PrimaryMuscleGrip:
+		*s = PrimaryMuscleGrip
+		return nil
+	default:
+		return errors.Errorf("invalid value: %q", data)
+	}
 }

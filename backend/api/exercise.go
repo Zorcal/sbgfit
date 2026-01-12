@@ -6,8 +6,15 @@ import (
 
 	"github.com/zorcal/sbgfit/backend/api/internal/conv"
 	"github.com/zorcal/sbgfit/backend/api/internal/openapi"
+	"github.com/zorcal/sbgfit/backend/internal/core/mdl"
 	"github.com/zorcal/sbgfit/backend/pkg/slicesx"
 )
+
+//go:generate moq -rm -fmt goimports -pkg api_test -out exercise_service_moq_test.go . ExerciseService:MockedExerciseServiced
+
+type ExerciseService interface {
+	Exercises(ctx context.Context, fltr mdl.ExerciseFilter) ([]mdl.Exercise, error)
+}
 
 func (a *api) GetExercises(ctx context.Context, params openapi.GetExercisesParams) (openapi.GetExercisesRes, error) {
 	fltr := conv.ExerciseFilterFromAPI(params)

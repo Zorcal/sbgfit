@@ -3,12 +3,14 @@
 package openapi
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/ogen-go/ogen/conv"
 	"github.com/ogen-go/ogen/middleware"
 	"github.com/ogen-go/ogen/ogenerrors"
 	"github.com/ogen-go/ogen/uri"
+	"github.com/ogen-go/ogen/validate"
 )
 
 // GetExercisesParams is parameters of getExercises operation.
@@ -16,9 +18,13 @@ type GetExercisesParams struct {
 	// Filter by exercise name.
 	Name OptString `json:",omitempty,omitzero"`
 	// Filter by exercise category.
-	Category OptGetExercisesCategory `json:",omitempty,omitzero"`
+	Category OptExerciseCategory `json:",omitempty,omitzero"`
 	// Filter by equipment types (comma-separated).
-	EquipmentTypes OptString `json:",omitempty,omitzero"`
+	EquipmentTypes []EquipmentType `json:",omitempty"`
+	// Filter by primary muscles (comma-separated).
+	PrimaryMuscles []PrimaryMuscle `json:",omitempty"`
+	// Filter by tags (comma-separated).
+	Tags []ExerciseTag `json:",omitempty"`
 }
 
 func unpackGetExercisesParams(packed middleware.Parameters) (params GetExercisesParams) {
@@ -37,7 +43,7 @@ func unpackGetExercisesParams(packed middleware.Parameters) (params GetExercises
 			In:   "query",
 		}
 		if v, ok := packed[key]; ok {
-			params.Category = v.(OptGetExercisesCategory)
+			params.Category = v.(OptExerciseCategory)
 		}
 	}
 	{
@@ -46,7 +52,25 @@ func unpackGetExercisesParams(packed middleware.Parameters) (params GetExercises
 			In:   "query",
 		}
 		if v, ok := packed[key]; ok {
-			params.EquipmentTypes = v.(OptString)
+			params.EquipmentTypes = v.([]EquipmentType)
+		}
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "primaryMuscles",
+			In:   "query",
+		}
+		if v, ok := packed[key]; ok {
+			params.PrimaryMuscles = v.([]PrimaryMuscle)
+		}
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "tags",
+			In:   "query",
+		}
+		if v, ok := packed[key]; ok {
+			params.Tags = v.([]ExerciseTag)
 		}
 	}
 	return params
@@ -105,7 +129,7 @@ func decodeGetExercisesParams(args [0]string, argsEscaped bool, r *http.Request)
 
 		if err := q.HasParam(cfg); err == nil {
 			if err := q.DecodeParam(cfg, func(d uri.Decoder) error {
-				var paramsDotCategoryVal GetExercisesCategory
+				var paramsDotCategoryVal ExerciseCategory
 				if err := func() error {
 					val, err := d.DecodeValue()
 					if err != nil {
@@ -117,7 +141,7 @@ func decodeGetExercisesParams(args [0]string, argsEscaped bool, r *http.Request)
 						return err
 					}
 
-					paramsDotCategoryVal = GetExercisesCategory(c)
+					paramsDotCategoryVal = ExerciseCategory(c)
 					return nil
 				}(); err != nil {
 					return err
@@ -156,31 +180,55 @@ func decodeGetExercisesParams(args [0]string, argsEscaped bool, r *http.Request)
 		cfg := uri.QueryParameterDecodingConfig{
 			Name:    "equipmentTypes",
 			Style:   uri.QueryStyleForm,
-			Explode: true,
+			Explode: false,
 		}
 
 		if err := q.HasParam(cfg); err == nil {
 			if err := q.DecodeParam(cfg, func(d uri.Decoder) error {
-				var paramsDotEquipmentTypesVal string
-				if err := func() error {
-					val, err := d.DecodeValue()
-					if err != nil {
+				return d.DecodeArray(func(d uri.Decoder) error {
+					var paramsDotEquipmentTypesVal EquipmentType
+					if err := func() error {
+						val, err := d.DecodeValue()
+						if err != nil {
+							return err
+						}
+
+						c, err := conv.ToString(val)
+						if err != nil {
+							return err
+						}
+
+						paramsDotEquipmentTypesVal = EquipmentType(c)
+						return nil
+					}(); err != nil {
 						return err
 					}
-
-					c, err := conv.ToString(val)
-					if err != nil {
-						return err
-					}
-
-					paramsDotEquipmentTypesVal = c
+					params.EquipmentTypes = append(params.EquipmentTypes, paramsDotEquipmentTypesVal)
 					return nil
-				}(); err != nil {
-					return err
-				}
-				params.EquipmentTypes.SetTo(paramsDotEquipmentTypesVal)
-				return nil
+				})
 			}); err != nil {
+				return err
+			}
+			if err := func() error {
+				var failures []validate.FieldError
+				for i, elem := range params.EquipmentTypes {
+					if err := func() error {
+						if err := elem.Validate(); err != nil {
+							return err
+						}
+						return nil
+					}(); err != nil {
+						failures = append(failures, validate.FieldError{
+							Name:  fmt.Sprintf("[%d]", i),
+							Error: err,
+						})
+					}
+				}
+				if len(failures) > 0 {
+					return &validate.Error{Fields: failures}
+				}
+				return nil
+			}(); err != nil {
 				return err
 			}
 		}
@@ -188,6 +236,136 @@ func decodeGetExercisesParams(args [0]string, argsEscaped bool, r *http.Request)
 	}(); err != nil {
 		return params, &ogenerrors.DecodeParamError{
 			Name: "equipmentTypes",
+			In:   "query",
+			Err:  err,
+		}
+	}
+	// Decode query: primaryMuscles.
+	if err := func() error {
+		cfg := uri.QueryParameterDecodingConfig{
+			Name:    "primaryMuscles",
+			Style:   uri.QueryStyleForm,
+			Explode: false,
+		}
+
+		if err := q.HasParam(cfg); err == nil {
+			if err := q.DecodeParam(cfg, func(d uri.Decoder) error {
+				return d.DecodeArray(func(d uri.Decoder) error {
+					var paramsDotPrimaryMusclesVal PrimaryMuscle
+					if err := func() error {
+						val, err := d.DecodeValue()
+						if err != nil {
+							return err
+						}
+
+						c, err := conv.ToString(val)
+						if err != nil {
+							return err
+						}
+
+						paramsDotPrimaryMusclesVal = PrimaryMuscle(c)
+						return nil
+					}(); err != nil {
+						return err
+					}
+					params.PrimaryMuscles = append(params.PrimaryMuscles, paramsDotPrimaryMusclesVal)
+					return nil
+				})
+			}); err != nil {
+				return err
+			}
+			if err := func() error {
+				var failures []validate.FieldError
+				for i, elem := range params.PrimaryMuscles {
+					if err := func() error {
+						if err := elem.Validate(); err != nil {
+							return err
+						}
+						return nil
+					}(); err != nil {
+						failures = append(failures, validate.FieldError{
+							Name:  fmt.Sprintf("[%d]", i),
+							Error: err,
+						})
+					}
+				}
+				if len(failures) > 0 {
+					return &validate.Error{Fields: failures}
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "primaryMuscles",
+			In:   "query",
+			Err:  err,
+		}
+	}
+	// Decode query: tags.
+	if err := func() error {
+		cfg := uri.QueryParameterDecodingConfig{
+			Name:    "tags",
+			Style:   uri.QueryStyleForm,
+			Explode: false,
+		}
+
+		if err := q.HasParam(cfg); err == nil {
+			if err := q.DecodeParam(cfg, func(d uri.Decoder) error {
+				return d.DecodeArray(func(d uri.Decoder) error {
+					var paramsDotTagsVal ExerciseTag
+					if err := func() error {
+						val, err := d.DecodeValue()
+						if err != nil {
+							return err
+						}
+
+						c, err := conv.ToString(val)
+						if err != nil {
+							return err
+						}
+
+						paramsDotTagsVal = ExerciseTag(c)
+						return nil
+					}(); err != nil {
+						return err
+					}
+					params.Tags = append(params.Tags, paramsDotTagsVal)
+					return nil
+				})
+			}); err != nil {
+				return err
+			}
+			if err := func() error {
+				var failures []validate.FieldError
+				for i, elem := range params.Tags {
+					if err := func() error {
+						if err := elem.Validate(); err != nil {
+							return err
+						}
+						return nil
+					}(); err != nil {
+						failures = append(failures, validate.FieldError{
+							Name:  fmt.Sprintf("[%d]", i),
+							Error: err,
+						})
+					}
+				}
+				if len(failures) > 0 {
+					return &validate.Error{Fields: failures}
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "tags",
 			In:   "query",
 			Err:  err,
 		}
