@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/zorcal/sbgfit/backend/api/adapt"
-	"github.com/zorcal/sbgfit/backend/api/openapi"
+	"github.com/zorcal/sbgfit/backend/api/internal/adapt"
+	"github.com/zorcal/sbgfit/backend/api/internal/openapi"
 	"github.com/zorcal/sbgfit/backend/pkg/slicesx"
 )
 
