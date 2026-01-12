@@ -18,8 +18,8 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/zorcal/sbgfit/backend/core/data/pgdb"
-	"github.com/zorcal/sbgfit/backend/core/data/schema"
+	"github.com/zorcal/sbgfit/backend/internal/data/pgdb"
+	"github.com/zorcal/sbgfit/backend/internal/data/schema"
 )
 
 // Static database configuration. See docker-compose.yml at repository root.

@@ -7,8 +7,8 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/zorcal/sbgfit/backend/core/data/pgtest"
-	"github.com/zorcal/sbgfit/backend/core/data/schema"
+	"github.com/zorcal/sbgfit/backend/internal/data/pgtest"
+	"github.com/zorcal/sbgfit/backend/internal/data/schema"
 )
 
 func TestSeed(t *testing.T) {
