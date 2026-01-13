@@ -74,6 +74,10 @@ func run(ctx context.Context, cfg Config, log *slog.Logger) (retErr error) {
 		return fmt.Errorf("status check database connection: %w", err)
 	}
 
+	if err := schema.SeedData(ctx, pool); err != nil {
+		return fmt.Errorf("seed database: %w", err)
+	}
+
 	exerciseSvc := exercise.NewService(pool)
 
 	handler, err := api.NewHandler(api.Config{

@@ -30,6 +30,7 @@ func Migrate(ctx context.Context, connStr string) error {
 	db := dbmate.New(connURL)
 	db.FS = migrationsFS
 	db.MigrationsDir = []string{"./migrations"}
+	db.AutoDumpSchema = false
 
 	if err := db.CreateAndMigrate(); err != nil {
 		return fmt.Errorf("create and migrate: %w", err)
