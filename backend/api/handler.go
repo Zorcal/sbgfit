@@ -32,6 +32,9 @@ func NewHandler(cfg Config) (http.Handler, error) {
 
 	mux.Handle("/api/v1/", http.StripPrefix("/api/v1", v1Handler))
 
+	mux.Handle("/swagger/", swaggerUIHandler())
+	mux.Handle("/swagger/openapi.yml", openAPISpecHandler(cfg.Log))
+
 	return mux, nil
 }
 
