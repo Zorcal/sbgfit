@@ -11,6 +11,7 @@ import (
 	"github.com/ogen-go/ogen/ogenerrors"
 
 	"github.com/zorcal/sbgfit/backend/api/internal/openapi"
+	"github.com/zorcal/sbgfit/backend/pkg/httpmux"
 )
 
 type Config struct {
@@ -19,7 +20,10 @@ type Config struct {
 }
 
 func NewHandler(cfg Config) (http.Handler, error) {
-	mux := http.NewServeMux()
+	mux := httpmux.New(
+		httpTraceMiddleware(),
+		httpLoggingMiddleware(cfg.Log),
+	)
 
 	v1Handler, err := newV1Handler(cfg)
 	if err != nil {
@@ -46,13 +50,7 @@ func newV1Handler(cfg Config) (http.Handler, error) {
 		return nil, fmt.Errorf("create openapi server: %w", err)
 	}
 
-	// TODO: make global to mux
-	h := wrapHTTPMiddleware(srv,
-		httpTraceMiddleware(),
-		httpLoggingMiddleware(cfg.Log),
-	)
-
-	return h, nil
+	return srv, nil
 }
 
 func errorHandler(_ context.Context, w http.ResponseWriter, _ *http.Request, err error) {

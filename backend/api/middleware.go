@@ -13,6 +13,7 @@ import (
 	"github.com/ogen-go/ogen/middleware"
 
 	"github.com/zorcal/sbgfit/backend/api/internal/openapi"
+	"github.com/zorcal/sbgfit/backend/pkg/httpmux"
 	"github.com/zorcal/sbgfit/backend/pkg/slogctx"
 	"github.com/zorcal/sbgfit/backend/pkg/tracectx"
 )
@@ -40,7 +41,7 @@ func panicRecoveryMiddleware(log *slog.Logger) openapi.Middleware {
 	}
 }
 
-func httpTraceMiddleware() func(http.Handler) http.Handler {
+func httpTraceMiddleware() httpmux.Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
@@ -55,7 +56,7 @@ func httpTraceMiddleware() func(http.Handler) http.Handler {
 	}
 }
 
-func httpLoggingMiddleware(log *slog.Logger) func(http.Handler) http.Handler {
+func httpLoggingMiddleware(log *slog.Logger) httpmux.Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			now := time.Now()
@@ -101,17 +102,4 @@ func (sr *responseRecorder) Write(data []byte) (int, error) {
 		sr.statusCode = http.StatusOK
 	}
 	return sr.ResponseWriter.Write(data)
-}
-
-// wrapHTTPMiddleware wraps the given handler with the provided middlewares.
-// Middlewares are applied in the order they are provided, meaning the first
-// middleware in the slice will be the outermost wrapper.
-func wrapHTTPMiddleware(handler http.Handler, middlewares ...func(http.Handler) http.Handler) http.Handler {
-	for i := len(middlewares) - 1; i >= 0; i-- {
-		middleware := middlewares[i]
-		if middleware != nil {
-			handler = middleware(handler)
-		}
-	}
-	return handler
 }
