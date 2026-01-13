@@ -6,13 +6,12 @@ package exercise
 
 import (
 	"context"
-	"time"
+	"fmt"
 
-	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/zorcal/sbgfit/backend/internal/core/mdl"
-	"github.com/zorcal/sbgfit/backend/pkg/ptr"
 )
 
 // Service manages both the exercise library and user-created exercises. It
@@ -32,47 +31,34 @@ func NewService(pool *pgxpool.Pool) *Service {
 
 // Exercises retrieves predefined exercises from the exercise library based on
 // the provided filter criteria.
-func (s *Service) Exercises(ctx context.Context, fltr mdl.ExerciseFilter) ([]mdl.Exercise, error) {
-	now := time.Now()
+func (s *Service) Exercises(ctx context.Context, fltr mdl.ExerciseFilter, pageSize, pageNumber int) (exs []mdl.Exercise, totalCount int, retErr error) {
+	offset := (pageNumber - 1) * pageSize
+	exercisesQ, args := exercisesQuery(fltr, pageSize, offset)
 
-	exercises := []mdl.Exercise{
-		{
-			ID:             uuid.MustParse("550e8400-e29b-41d4-a716-446655440001"),
-			Name:           "Deadlift",
-			Category:       "strength",
-			Description:    ptr.To("A compound hip-hinge movement that targets the posterior chain"),
-			Instructions:   []string{"Stand with feet hip-width apart", "Grip bar with hands outside legs", "Lift by driving hips forward"},
-			EquipmentTypes: []string{"barbell", "plates"},
-			PrimaryMuscles: []string{"hamstrings", "glutes", "back"},
-			Tags:           []string{"compound", "powerlifting", "crossfit"},
-			CreatedAt:      now.Add(-24 * time.Hour),
-			UpdatedAt:      now.Add(-24 * time.Hour),
-		},
-		{
-			ID:             uuid.MustParse("550e8400-e29b-41d4-a716-446655440002"),
-			Name:           "Burpees",
-			Category:       "cardio",
-			Description:    ptr.To("Full-body exercise combining a squat thrust with a jump"),
-			Instructions:   []string{"Start standing", "Drop into squat position", "Jump back to plank", "Do push-up", "Jump feet forward", "Jump up with arms overhead"},
-			EquipmentTypes: []string{"bodyweight"},
-			PrimaryMuscles: []string{"full_body", "cardio"},
-			Tags:           []string{"hiit", "crossfit", "hyrox", "bodyweight"},
-			CreatedAt:      now.Add(-48 * time.Hour),
-			UpdatedAt:      now.Add(-48 * time.Hour),
-		},
-		{
-			ID:             uuid.MustParse("550e8400-e29b-41d4-a716-446655440003"),
-			Name:           "Bicep Curls",
-			Category:       "strength",
-			Description:    ptr.To("Isolated arm exercise targeting the bicep muscles"),
-			Instructions:   []string{"Hold dumbbells at sides", "Keep elbows at sides", "Curl weights up to shoulders", "Lower with control"},
-			EquipmentTypes: []string{"dumbbell"},
-			PrimaryMuscles: []string{"biceps"},
-			Tags:           []string{"isolation", "bodybuilding", "beginner"},
-			CreatedAt:      now.Add(-72 * time.Hour),
-			UpdatedAt:      now.Add(-72 * time.Hour),
-		},
+	rows, err := s.pool.Query(ctx, exercisesQ, args)
+	if err != nil {
+		return nil, 0, fmt.Errorf("query exercises: %w", err)
+	}
+	defer rows.Close()
+
+	type Result struct {
+		dbExercise
+
+		TotalCount int `db:"total_count"`
+	}
+	result, err := pgx.CollectRows(rows, pgx.RowToStructByName[Result])
+	if err != nil {
+		return nil, 0, fmt.Errorf("collect exercise rows: %w", err)
 	}
 
-	return exercises, nil
+	if len(result) > 0 {
+		totalCount = result[0].TotalCount
+	}
+
+	exs = make([]mdl.Exercise, len(result))
+	for i, row := range result {
+		exs[i] = dbExerciseToModel(row.dbExercise)
+	}
+
+	return exs, totalCount, nil
 }

@@ -516,10 +516,15 @@ func (s *ExerciseResponse) encodeFields(e *jx.Encoder) {
 		}
 		e.ArrEnd()
 	}
+	{
+		e.FieldStart("total")
+		e.Int(s.Total)
+	}
 }
 
-var jsonFieldsNameOfExerciseResponse = [1]string{
+var jsonFieldsNameOfExerciseResponse = [2]string{
 	0: "data",
+	1: "total",
 }
 
 // Decode decodes ExerciseResponse from json.
@@ -549,6 +554,18 @@ func (s *ExerciseResponse) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"data\"")
 			}
+		case "total":
+			requiredBitSet[0] |= 1 << 1
+			if err := func() error {
+				v, err := d.Int()
+				s.Total = int(v)
+				if err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"total\"")
+			}
 		default:
 			return d.Skip()
 		}
@@ -559,7 +576,7 @@ func (s *ExerciseResponse) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00000001,
+		0b00000011,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.

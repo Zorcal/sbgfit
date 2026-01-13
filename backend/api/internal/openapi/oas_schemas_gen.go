@@ -328,6 +328,8 @@ func (s *ExerciseCategory) UnmarshalText(data []byte) error {
 // Ref: #/components/schemas/ExerciseResponse
 type ExerciseResponse struct {
 	Data []Exercise `json:"data"`
+	// Total number of exercises available.
+	Total int `json:"total"`
 }
 
 // GetData returns the value of Data.
@@ -335,9 +337,19 @@ func (s *ExerciseResponse) GetData() []Exercise {
 	return s.Data
 }
 
+// GetTotal returns the value of Total.
+func (s *ExerciseResponse) GetTotal() int {
+	return s.Total
+}
+
 // SetData sets the value of Data.
 func (s *ExerciseResponse) SetData(val []Exercise) {
 	s.Data = val
+}
+
+// SetTotal sets the value of Total.
+func (s *ExerciseResponse) SetTotal(val int) {
+	s.Total = val
 }
 
 func (*ExerciseResponse) getExercisesRes() {}
@@ -487,6 +499,52 @@ func (o OptExerciseCategory) Get() (v ExerciseCategory, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptExerciseCategory) Or(d ExerciseCategory) ExerciseCategory {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptInt returns new OptInt with value set to v.
+func NewOptInt(v int) OptInt {
+	return OptInt{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptInt is optional int.
+type OptInt struct {
+	Value int
+	Set   bool
+}
+
+// IsSet returns true if OptInt was set.
+func (o OptInt) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptInt) Reset() {
+	var v int
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptInt) SetTo(v int) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptInt) Get() (v int, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptInt) Or(d int) int {
 	if v, ok := o.Get(); ok {
 		return v
 	}

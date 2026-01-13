@@ -21,7 +21,7 @@ var _ api.ExerciseService = &MockedExerciseServiced{}
 //
 //		// make and configure a mocked api.ExerciseService
 //		mockedExerciseService := &MockedExerciseServiced{
-//			ExercisesFunc: func(ctx context.Context, fltr mdl.ExerciseFilter) ([]mdl.Exercise, error) {
+//			ExercisesFunc: func(ctx context.Context, fltr mdl.ExerciseFilter, pageSize int, pageNumber int) ([]mdl.Exercise, int, error) {
 //				panic("mock out the Exercises method")
 //			},
 //		}
@@ -32,7 +32,7 @@ var _ api.ExerciseService = &MockedExerciseServiced{}
 //	}
 type MockedExerciseServiced struct {
 	// ExercisesFunc mocks the Exercises method.
-	ExercisesFunc func(ctx context.Context, fltr mdl.ExerciseFilter) ([]mdl.Exercise, error)
+	ExercisesFunc func(ctx context.Context, fltr mdl.ExerciseFilter, pageSize int, pageNumber int) ([]mdl.Exercise, int, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -42,27 +42,35 @@ type MockedExerciseServiced struct {
 			Ctx context.Context
 			// Fltr is the fltr argument value.
 			Fltr mdl.ExerciseFilter
+			// PageSize is the pageSize argument value.
+			PageSize int
+			// PageNumber is the pageNumber argument value.
+			PageNumber int
 		}
 	}
 	lockExercises sync.RWMutex
 }
 
 // Exercises calls ExercisesFunc.
-func (mock *MockedExerciseServiced) Exercises(ctx context.Context, fltr mdl.ExerciseFilter) ([]mdl.Exercise, error) {
+func (mock *MockedExerciseServiced) Exercises(ctx context.Context, fltr mdl.ExerciseFilter, pageSize int, pageNumber int) ([]mdl.Exercise, int, error) {
 	if mock.ExercisesFunc == nil {
 		panic("MockedExerciseServiced.ExercisesFunc: method is nil but ExerciseService.Exercises was just called")
 	}
 	callInfo := struct {
-		Ctx  context.Context
-		Fltr mdl.ExerciseFilter
+		Ctx        context.Context
+		Fltr       mdl.ExerciseFilter
+		PageSize   int
+		PageNumber int
 	}{
-		Ctx:  ctx,
-		Fltr: fltr,
+		Ctx:        ctx,
+		Fltr:       fltr,
+		PageSize:   pageSize,
+		PageNumber: pageNumber,
 	}
 	mock.lockExercises.Lock()
 	mock.calls.Exercises = append(mock.calls.Exercises, callInfo)
 	mock.lockExercises.Unlock()
-	return mock.ExercisesFunc(ctx, fltr)
+	return mock.ExercisesFunc(ctx, fltr, pageSize, pageNumber)
 }
 
 // ExercisesCalls gets all the calls that were made to Exercises.
@@ -70,12 +78,16 @@ func (mock *MockedExerciseServiced) Exercises(ctx context.Context, fltr mdl.Exer
 //
 //	len(mockedExerciseService.ExercisesCalls())
 func (mock *MockedExerciseServiced) ExercisesCalls() []struct {
-	Ctx  context.Context
-	Fltr mdl.ExerciseFilter
+	Ctx        context.Context
+	Fltr       mdl.ExerciseFilter
+	PageSize   int
+	PageNumber int
 } {
 	var calls []struct {
-		Ctx  context.Context
-		Fltr mdl.ExerciseFilter
+		Ctx        context.Context
+		Fltr       mdl.ExerciseFilter
+		PageSize   int
+		PageNumber int
 	}
 	mock.lockExercises.RLock()
 	calls = mock.calls.Exercises

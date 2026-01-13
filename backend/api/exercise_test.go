@@ -24,7 +24,7 @@ func TestGetExercises(t *testing.T) {
 	exerciseID2 := uuid.New()
 
 	exerciseSvc := &MockedExerciseServiced{
-		ExercisesFunc: func(ctx context.Context, fltr mdl.ExerciseFilter) ([]mdl.Exercise, error) {
+		ExercisesFunc: func(ctx context.Context, fltr mdl.ExerciseFilter, pageSize, pageNumber int) ([]mdl.Exercise, int, error) {
 			exs := []mdl.Exercise{
 				{
 					ID:             exerciseID1,
@@ -51,7 +51,7 @@ func TestGetExercises(t *testing.T) {
 					UpdatedAt:      now.AddDate(0, 0, -7),
 				},
 			}
-			return exs, nil
+			return exs, 2, nil
 		},
 	}
 
@@ -119,6 +119,7 @@ func TestGetExercises(t *testing.T) {
 				UpdatedAt: now.AddDate(0, 0, -7),
 			},
 		},
+		Total: 2,
 	}
 
 	testingx.AssertDiff(t, gotResp, wantResp, cmpopts.EquateApproxTime(time.Second))
@@ -126,8 +127,8 @@ func TestGetExercises(t *testing.T) {
 
 func TestGetExercises_error(t *testing.T) {
 	exerciseSvc := &MockedExerciseServiced{
-		ExercisesFunc: func(ctx context.Context, fltr mdl.ExerciseFilter) ([]mdl.Exercise, error) {
-			return nil, errors.New("some error")
+		ExercisesFunc: func(ctx context.Context, fltr mdl.ExerciseFilter, pageSize, pageNumber int) ([]mdl.Exercise, int, error) {
+			return nil, 0, errors.New("some error")
 		},
 	}
 
@@ -212,9 +213,9 @@ func TestGetExercises_queryParams(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			exerciseSvc := &MockedExerciseServiced{
-				ExercisesFunc: func(ctx context.Context, fltr mdl.ExerciseFilter) ([]mdl.Exercise, error) {
+				ExercisesFunc: func(ctx context.Context, fltr mdl.ExerciseFilter, pageSize, pageNumber int) ([]mdl.Exercise, int, error) {
 					testingx.AssertDiff(t, fltr, tt.wantFilter)
-					return nil, nil
+					return nil, 0, nil
 				},
 			}
 
@@ -264,8 +265,8 @@ func TestGetExercises_queryParams_invalid(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			exerciseSvc := &MockedExerciseServiced{
-				ExercisesFunc: func(ctx context.Context, fltr mdl.ExerciseFilter) ([]mdl.Exercise, error) {
-					return []mdl.Exercise{}, nil
+				ExercisesFunc: func(ctx context.Context, fltr mdl.ExerciseFilter, pageSize, pageNumber int) ([]mdl.Exercise, int, error) {
+					return []mdl.Exercise{}, 0, nil
 				},
 			}
 

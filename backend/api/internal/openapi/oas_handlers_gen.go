@@ -88,6 +88,14 @@ func (s *Server) handleGetExercisesRequest(args [0]string, argsEscaped bool, w h
 					Name: "tags",
 					In:   "query",
 				}: params.Tags,
+				{
+					Name: "pageSize",
+					In:   "query",
+				}: params.PageSize,
+				{
+					Name: "pageNumber",
+					In:   "query",
+				}: params.PageNumber,
 			},
 			Raw: r,
 		}
