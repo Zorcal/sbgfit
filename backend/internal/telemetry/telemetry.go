@@ -9,22 +9,58 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/baggage"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/trace"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
 	oteltrace "go.opentelemetry.io/otel/trace"
 )
 
 var tracer oteltrace.Tracer
 
+// Config holds telemetry configuration.
+type Config struct {
+	Enabled  bool
+	Endpoint string
+	Insecure bool
+}
+
 // InitTracing initializes OpenTelemetry tracing.
-func InitTracing(ctx context.Context, serviceName, serviceVersion string, log *slog.Logger) (func(), error) {
-	exporter, err := stdouttrace.New(
-		stdouttrace.WithPrettyPrint(),
-	)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create stdout exporter: %w", err)
+func InitTracing(ctx context.Context, serviceName, serviceVersion string, cfg Config, log *slog.Logger) (func(), error) {
+	if !cfg.Enabled {
+		log.InfoContext(ctx, "Telemetry is disabled")
+		return func() {}, nil
+	}
+
+	var exporter trace.SpanExporter
+	if cfg.Endpoint == "" || cfg.Endpoint == "stdout" {
+		// Use stdout for development/debugging
+		var err error
+		exporter, err = stdouttrace.New(stdouttrace.WithPrettyPrint())
+		if err != nil {
+			return nil, fmt.Errorf("failed to create stdout exporter: %w", err)
+		}
+		log.InfoContext(ctx, "Using stdout trace exporter")
+	} else {
+		// Use OTLP for production-like setup
+		opts := []otlptracegrpc.Option{
+			otlptracegrpc.WithEndpoint(cfg.Endpoint),
+		}
+		if cfg.Insecure {
+			opts = append(opts, otlptracegrpc.WithGRPCConn(
+				mustCreateGRPCConn(cfg.Endpoint),
+			))
+		}
+
+		var err error
+		exporter, err = otlptracegrpc.New(ctx, opts...)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create OTLP exporter: %w", err)
+		}
+		log.InfoContext(ctx, "Using OTLP trace exporter", "endpoint", cfg.Endpoint)
 	}
 
 	tp := trace.NewTracerProvider(
@@ -118,4 +154,13 @@ func StartSpanWithBaggageAttrs(ctx context.Context, name string, opts ...oteltra
 	}
 
 	return ctx, span
+}
+
+// mustCreateGRPCConn creates an insecure gRPC connection for local development.
+func mustCreateGRPCConn(endpoint string) *grpc.ClientConn {
+	conn, err := grpc.NewClient(endpoint, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		panic(fmt.Sprintf("failed to create gRPC connection: %v", err))
+	}
+	return conn
 }

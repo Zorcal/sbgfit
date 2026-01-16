@@ -130,6 +130,9 @@ linters:
             - go.opentelemetry.io/otel/exporters/stdout/stdouttrace
             - go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp
             - go.opentelemetry.io/otel/semconv/v1.17.0
+            - go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc
+            - google.golang.org/grpc
+            - google.golang.org/grpc/credentials/insecure
     ireturn:
       allow:
         - anon

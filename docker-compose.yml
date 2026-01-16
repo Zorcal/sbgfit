@@ -12,3 +12,58 @@ services:
       interval: 1s
       timeout: 3s
       retries: 30
+    networks:
+      - sbgfit
+
+  # OpenTelemetry Collector - receives traces from your app
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.91.0
+    container_name: sbgfit-otel-collector
+    command: ["--config=/etc/otel-collector-config.yml"]
+    volumes:
+      - ./otel-collector-config.yml:/etc/otel-collector-config.yml
+    ports:
+      - "4317:4317"   # OTLP gRPC receiver
+      - "4318:4318"   # OTLP HTTP receiver
+    depends_on:
+      - tempo
+    networks:
+      - sbgfit
+
+  # Grafana Tempo - stores traces
+  tempo:
+    image: grafana/tempo:2.3.1
+    container_name: sbgfit-tempo
+    command: [ "-config.file=/etc/tempo.yml" ]
+    volumes:
+      - ./tempo.yml:/etc/tempo.yml
+      - tempo-data:/var/tempo
+    ports:
+      - "3200:3200"   # Tempo HTTP
+    networks:
+      - sbgfit
+
+  # Grafana - visualizes traces
+  grafana:
+    image: grafana/grafana:10.2.3
+    container_name: sbgfit-grafana
+    ports:
+      - "3000:3000"   # Grafana UI
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+    depends_on:
+      - tempo
+    networks:
+      - sbgfit
+
+volumes:
+  tempo-data:
+  grafana-data:
+
+networks:
+  sbgfit:
+    driver: bridge

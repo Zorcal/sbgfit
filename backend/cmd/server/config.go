@@ -27,6 +27,11 @@ type Config struct {
 		Name       string `conf:"default:sbgfit"`
 		SSLEnabled bool   `conf:"default:false"`
 	}
+	Telemetry struct {
+		Enabled  bool   `conf:"default:true"`
+		Endpoint string `conf:"default:127.0.0.1:4317"`
+		Insecure bool   `conf:"default:true"`
+	}
 }
 
 // LogValue implements slog.LogValuer.
@@ -48,6 +53,11 @@ func (c Config) LogValue() slog.Value {
 			slog.Int("port", c.DB.Port),
 			slog.String("name", c.DB.Name),
 			slog.Bool("ssl_enabled", c.DB.SSLEnabled),
+		),
+		slog.Group("telemetry",
+			slog.Bool("enabled", c.Telemetry.Enabled),
+			slog.String("endpoint", c.Telemetry.Endpoint),
+			slog.Bool("insecure", c.Telemetry.Insecure),
 		),
 	)
 }

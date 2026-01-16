@@ -54,7 +54,12 @@ func main() {
 func run(ctx context.Context, cfg Config, log *slog.Logger) (retErr error) {
 	log.InfoContext(ctx, "Starting...", "config", cfg)
 
-	cleanupTracing, err := telemetry.InitTracing(ctx, "sbgfit-backend", appVersion, log)
+	telemetryConfig := telemetry.Config{
+		Enabled:  cfg.Telemetry.Enabled,
+		Endpoint: cfg.Telemetry.Endpoint,
+		Insecure: cfg.Telemetry.Insecure,
+	}
+	cleanupTracing, err := telemetry.InitTracing(ctx, "sbgfit-backend", appVersion, telemetryConfig, log)
 	if err != nil {
 		return fmt.Errorf("initialize tracing: %w", err)
 	}
