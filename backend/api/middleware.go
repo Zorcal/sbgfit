@@ -1,7 +1,6 @@
 package api
 
 import (
-	"cmp"
 	"context"
 	"fmt"
 	"log/slog"
@@ -9,13 +8,13 @@ import (
 	"runtime/debug"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/ogen-go/ogen/middleware"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
 	"github.com/zorcal/sbgfit/backend/api/internal/openapi"
+	"github.com/zorcal/sbgfit/backend/internal/telemetry"
 	"github.com/zorcal/sbgfit/backend/pkg/httpmux"
 	"github.com/zorcal/sbgfit/backend/pkg/slogctx"
-	"github.com/zorcal/sbgfit/backend/pkg/tracectx"
 )
 
 func panicRecoveryMiddleware(log *slog.Logger) openapi.Middleware {
@@ -43,16 +42,22 @@ func panicRecoveryMiddleware(log *slog.Logger) openapi.Middleware {
 
 func httpTraceMiddleware() httpmux.Middleware {
 	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
 
-			traceparent := cmp.Or(r.Header.Get("Traceparent"), uuid.NewString())
+			traceID := telemetry.GetTraceID(ctx)
+			if traceID != "" {
+				ctx = slogctx.Attach(ctx, "trace_id", traceID)
+			}
 
-			ctx = tracectx.Set(ctx, traceparent)
-			ctx = slogctx.Attach(ctx, "traceparent", traceparent)
+			spanID := telemetry.GetSpanID(ctx)
+			if spanID != "" {
+				ctx = slogctx.Attach(ctx, "span_id", spanID)
+			}
 
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
+		return otelhttp.NewHandler(h, "sbgfit-http")
 	}
 }
 

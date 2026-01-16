@@ -12,6 +12,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/zorcal/sbgfit/backend/internal/core/mdl"
+	"github.com/zorcal/sbgfit/backend/internal/telemetry"
 )
 
 // Service manages both the exercise library and user-created exercises. It
@@ -32,7 +33,11 @@ func NewService(pool *pgxpool.Pool) *Service {
 // Exercises retrieves predefined exercises from the exercise library based on
 // the provided filter criteria.
 func (s *Service) Exercises(ctx context.Context, fltr mdl.ExerciseFilter, pageSize, pageNumber int) (exs []mdl.Exercise, totalCount int, retErr error) {
+	ctx, span := telemetry.StartSpan(ctx, "exercise.Service.Exercises")
+	defer span.End()
+
 	offset := (pageNumber - 1) * pageSize
+
 	exercisesQ, args := exercisesQuery(fltr, pageSize, offset)
 
 	rows, err := s.pool.Query(ctx, exercisesQ, args)

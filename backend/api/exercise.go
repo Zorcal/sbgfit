@@ -4,9 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	"go.opentelemetry.io/otel/attribute"
+
 	"github.com/zorcal/sbgfit/backend/api/internal/conv"
 	"github.com/zorcal/sbgfit/backend/api/internal/openapi"
 	"github.com/zorcal/sbgfit/backend/internal/core/mdl"
+	"github.com/zorcal/sbgfit/backend/internal/telemetry"
 	"github.com/zorcal/sbgfit/backend/pkg/slicesx"
 )
 
@@ -17,6 +20,11 @@ type ExerciseService interface {
 }
 
 func (a *api) GetExercises(ctx context.Context, params openapi.GetExercisesParams) (openapi.GetExercisesRes, error) {
+	ctx, span := telemetry.StartSpan(ctx, "api.api.GetExercises")
+	defer span.End()
+
+	span.SetAttributes(exercisesParamsSpanAttributes(params)...)
+
 	fltr := conv.ExerciseFilterFromAPI(params)
 
 	pageSize := 20
@@ -40,4 +48,33 @@ func (a *api) GetExercises(ctx context.Context, params openapi.GetExercisesParam
 		Data:  data,
 		Total: totalCount,
 	}, nil
+}
+
+func exercisesParamsSpanAttributes(params openapi.GetExercisesParams) []attribute.KeyValue {
+	attrs := []attribute.KeyValue{
+		attribute.Int("exercise_params.page_size", params.PageSize.Value),
+		attribute.Int("exercise_params.page_number", params.PageNumber.Value),
+	}
+
+	if name, ok := params.Name.Get(); ok {
+		attrs = append(attrs, attribute.String("exercise_params.name", name))
+	}
+
+	if category, ok := params.Category.Get(); ok {
+		attrs = append(attrs, attribute.String("exercise_params.category", string(category)))
+	}
+
+	if len(params.EquipmentTypes) > 0 {
+		attrs = append(attrs, attribute.StringSlice("exercise_params.equipment_types", slicesx.ToStrings(params.EquipmentTypes)))
+	}
+
+	if len(params.PrimaryMuscles) > 0 {
+		attrs = append(attrs, attribute.StringSlice("exercise_params.primary_muscles", slicesx.ToStrings(params.PrimaryMuscles)))
+	}
+
+	if len(params.Tags) > 0 {
+		attrs = append(attrs, attribute.StringSlice("exercise_params.tags", slicesx.ToStrings(params.Tags)))
+	}
+
+	return attrs
 }

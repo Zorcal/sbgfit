@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -87,7 +86,7 @@ func openAPISpecHandler(log *slog.Logger) http.Handler {
 
 		specContent, err := os.ReadFile(specPath)
 		if err != nil {
-			log.ErrorContext(ctx, fmt.Sprintf("Failed to read %s", specPath), "error", err)
+			log.ErrorContext(ctx, "Failed to read "+specPath, "error", err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}

@@ -18,6 +18,7 @@ import (
 	"github.com/zorcal/sbgfit/backend/internal/core/exercise"
 	"github.com/zorcal/sbgfit/backend/internal/data/pgdb"
 	"github.com/zorcal/sbgfit/backend/internal/data/schema"
+	"github.com/zorcal/sbgfit/backend/internal/telemetry"
 	"github.com/zorcal/sbgfit/backend/pkg/slogctx"
 )
 
@@ -52,6 +53,12 @@ func main() {
 
 func run(ctx context.Context, cfg Config, log *slog.Logger) (retErr error) {
 	log.InfoContext(ctx, "Starting...", "config", cfg)
+
+	cleanupTracing, err := telemetry.InitTracing(ctx, "sbgfit-backend", appVersion, log)
+	if err != nil {
+		return fmt.Errorf("initialize tracing: %w", err)
+	}
+	defer cleanupTracing()
 
 	connStr := pgdb.ConnStr(cfg.DB.Host, cfg.DB.Port, cfg.DB.User, cfg.DB.Password, cfg.DB.Name, cfg.DB.SSLEnabled)
 

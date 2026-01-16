@@ -7,7 +7,10 @@ import (
 	"log/slog"
 	"net/http"
 
+	"go.opentelemetry.io/otel/codes"
+
 	"github.com/zorcal/sbgfit/backend/api/internal/openapi"
+	"github.com/zorcal/sbgfit/backend/internal/telemetry"
 )
 
 type api struct {
@@ -16,6 +19,12 @@ type api struct {
 }
 
 func (a *api) NewError(ctx context.Context, err error) *openapi.ErrorResponseStatusCode {
+	span := telemetry.SpanFromContext(ctx)
+	if span.SpanContext().IsValid() {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+	}
+
 	if httpErr := new(httpError); errors.As(err, &httpErr) {
 		a.log.Log(ctx, logLevel(httpErr.StatusCode), "Request error", "error", httpErr)
 		return &openapi.ErrorResponseStatusCode{

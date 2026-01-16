@@ -10,3 +10,8 @@ func Map[T, U any](s []T, f func(T) U) []U {
 	}
 	return out
 }
+
+// ToStrings converts a slice of type ~string to a slice of string.
+func ToStrings[T ~string](s []T) []string {
+	return Map(s, func(t T) string { return string(t) })
+}
