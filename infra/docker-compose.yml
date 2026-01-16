@@ -3,7 +3,9 @@ services:
     image: "postgres:17"
     container_name: sbgfit-postgres
     ports:
-      - "5432:5432"
+      # Expose a different port than 5432 locally to not conflict with other
+      # services.
+      - "5433:5432"
     environment:
       - POSTGRES_HOST_AUTH_METHOD=trust
       - POSTGRES_DB=sbgfit
@@ -23,8 +25,8 @@ services:
     volumes:
       - ./otel-collector-config.yml:/etc/otel-collector-config.yml
     ports:
-      - "4317:4317"   # OTLP gRPC receiver
-      - "4318:4318"   # OTLP HTTP receiver
+      - "4317:4317" # OTLP gRPC receiver
+      - "4318:4318" # OTLP HTTP receiver
     depends_on:
       - tempo
     networks:
@@ -34,12 +36,12 @@ services:
   tempo:
     image: grafana/tempo:2.3.1
     container_name: sbgfit-tempo
-    command: [ "-config.file=/etc/tempo.yml" ]
+    command: ["-config.file=/etc/tempo.yml"]
     volumes:
       - ./tempo.yml:/etc/tempo.yml
       - tempo-data:/var/tempo
     ports:
-      - "3200:3200"   # Tempo HTTP
+      - "3200:3200" # Tempo HTTP
     networks:
       - sbgfit
 
@@ -48,7 +50,7 @@ services:
     image: grafana/grafana:10.2.3
     container_name: sbgfit-grafana
     ports:
-      - "3000:3000"   # Grafana UI
+      - "3000:3000" # Grafana UI
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_USERS_ALLOW_SIGN_UP=false

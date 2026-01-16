@@ -23,7 +23,7 @@ type Config struct {
 		User       string `conf:"default:postgres"`
 		Password   string `conf:"default:postgres,mask"`
 		Host       string `conf:"default:sbgfit-postgres"`
-		Port       int    `conf:"default:5432"`
+		Port       int    `conf:"default:5433"`
 		Name       string `conf:"default:sbgfit"`
 		SSLEnabled bool   `conf:"default:false"`
 	}

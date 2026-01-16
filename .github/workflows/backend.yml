@@ -48,7 +48,7 @@ jobs:
       postgres:
         image: postgres:17
         ports:
-          - 5432:5432
+          - 5433:5432
         env:
           # https://www.postgresql.org/docs/current/libpq-envars.html
           POSTGRES_USER: ${{ env.POSTGRES_USER }}
@@ -76,7 +76,7 @@ jobs:
         working-directory: ./backend
         env:
           POSTGRES_HOST: ${{ env.POSTGRES_HOST }}
-          POSTGRES_PORT: 5432
+          POSTGRES_PORT: 5433
           POSTGRES_USER: ${{ env.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
         run: go test -race ./...
