@@ -27,11 +27,23 @@ Add the following to your /etc/hosts for communication with app and docker conta
 Run:
 
 ```sh
-docker compose up -d
+cd ./infra && docker compose up -d
 ```
 
 Install `moq`:
 
 ```sh
-go install github.com/matryer/moq@latest
+cd ./backend && go install github.com/matryer/moq@latest
 ```
+
+## Local Debugging
+
+### Observability Stack
+
+The application includes distributed tracing via OpenTelemetry. To access the observability tools:
+
+1. **Start the observability stack**: `cd infra && docker compose up -d`
+2. **Access Grafana**: Open http://localhost:3000
+   - **Username**: `admin`
+   - **Password**: `admin`
+3. **View traces**: Navigate to "Explore" and select the "Tempo" datasource to search and view distributed traces
