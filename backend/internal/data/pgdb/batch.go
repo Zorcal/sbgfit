@@ -2,6 +2,7 @@ package pgdb
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
@@ -10,20 +11,10 @@ import (
 	"github.com/zorcal/sbgfit/backend/internal/telemetry"
 )
 
-// Batch wraps a pgx.Batch together with the pgxpool.Pool it will be executed on.
-//
-// It is used to queue multiple database operations and execute them together
-// as a single batch.
+// Batch wraps a pgx.Batch. It is used to queue multiple database operations
+// and execute them together as a single batch.
 type Batch struct {
 	b *pgx.Batch
-	p *pgxpool.Pool
-}
-
-func newBatch(p *pgxpool.Pool) *Batch {
-	return &Batch{
-		b: &pgx.Batch{},
-		p: p,
-	}
 }
 
 // RunBatch creates a new Batch, passes it to f for query queueing, and then
@@ -35,15 +26,55 @@ func RunBatch(ctx context.Context, p *pgxpool.Pool, queueFunc func(ctx context.C
 	ctx, span := telemetry.StartSpan(ctx, "pgdb.RunBatch")
 	defer span.End()
 
-	b := newBatch(p)
+	b := &Batch{
+		b: &pgx.Batch{},
+	}
 
 	if err := queueFunc(ctx, b); err != nil {
 		return fmt.Errorf("queueFunc: %w", err)
 	}
 
-	result := b.p.SendBatch(ctx, b.b)
+	result := p.SendBatch(ctx, b.b)
 	if err := result.Close(); err != nil {
 		return fmt.Errorf("close batch result: %w", err)
+	}
+
+	return nil
+}
+
+// RunBatchTx creates a new Batch, passes it to queueFunc for query queueing,
+// and executes the batch inside a database transaction.
+func RunBatchTx(ctx context.Context, p *pgxpool.Pool, queueFunc func(ctx context.Context, b *Batch) error) (retErr error) {
+	ctx, span := telemetry.StartSpan(ctx, "pgdb.RunBatchTx")
+	defer span.End()
+
+	tx, ctx, err := beginPoolTx(ctx, p)
+	if err != nil {
+		return fmt.Errorf("begin pool tx: %w", err)
+	}
+	defer func() {
+		if retErr != nil {
+			if err := tx.Rollback(ctx); err != nil && !errors.Is(err, pgx.ErrTxClosed) {
+				retErr = errors.Join(retErr, fmt.Errorf("rollback tx: %w", err))
+			}
+		}
+	}()
+
+	b := &Batch{
+		b: &pgx.Batch{},
+	}
+
+	if err := queueFunc(ctx, b); err != nil {
+		return fmt.Errorf("queueFunc: %w", err)
+	}
+
+	result := tx.SendBatch(ctx, b.b)
+	if err := result.Close(); err != nil {
+		return fmt.Errorf("close batch result: %w", err)
+	}
+
+	if err := tx.Commit(ctx); err != nil && !errors.Is(err, pgx.ErrTxClosed) {
+		return fmt.Errorf("commit tx: %w", err)
 	}
 
 	return nil
