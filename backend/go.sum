@@ -65,6 +65,8 @@ github.com/mattn/go-sqlite3 v1.14.28 h1:ThEiQrnbtumT+QMknw63Befp/ce/nUPgBPMlRFEu
 github.com/mattn/go-sqlite3 v1.14.28/go.mod h1:Uh1q+B4BYcTPb+yiD3kU8Ct7aC0hY9fxUwlHK0RXw+Y=
 github.com/ogen-go/ogen v1.18.0 h1:6RQ7lFBjOeNaUWu4getfqIh4GJbEY4hqKuzDtec/g60=
 github.com/ogen-go/ogen v1.18.0/go.mod h1:dHFr2Wf6cA7tSxMI+zPC21UR5hAlDw8ZYUkK3PziURY=
+github.com/pgx-contrib/pgxotel v0.0.0-20251226220757-991205eca480 h1:ub8Urw3YStr6nnrjRB6/3uff3ZEl/jEKpGWyTjL8KCY=
+github.com/pgx-contrib/pgxotel v0.0.0-20251226220757-991205eca480/go.mod h1:rU6ugJamK9jHwydqtcjUSW8CywH+8iL7zm93BsMuh+w=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/rogpeppe/go-internal v1.14.1 h1:UQB4HGPB6osV0SQTLymcB4TgvyWu6ZyliaW0tI/otEQ=

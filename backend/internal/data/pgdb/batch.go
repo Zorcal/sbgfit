@@ -32,7 +32,7 @@ func newBatch(p *pgxpool.Pool) *Batch {
 // If f returns an error, the batch is not sent. If sending or closing the
 // batch results fails, RunBatch returns an error.
 func RunBatch(ctx context.Context, p *pgxpool.Pool, queueFunc func(ctx context.Context, b *Batch) error) error {
-	ctx, span := telemetry.StartSpan(ctx, "pgdb.BatchTx")
+	ctx, span := telemetry.StartSpan(ctx, "pgdb.RunBatch")
 	defer span.End()
 
 	b := newBatch(p)
@@ -41,15 +41,10 @@ func RunBatch(ctx context.Context, p *pgxpool.Pool, queueFunc func(ctx context.C
 		return fmt.Errorf("queueFunc: %w", err)
 	}
 
-	span.AddEvent("Batch started")
-
 	result := b.p.SendBatch(ctx, b.b)
 	if err := result.Close(); err != nil {
-		span.RecordError(err)
 		return fmt.Errorf("close batch result: %w", err)
 	}
-
-	span.AddEvent("Batch successfully finished")
 
 	return nil
 }

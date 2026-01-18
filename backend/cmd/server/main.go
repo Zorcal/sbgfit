@@ -13,6 +13,7 @@ import (
 	"github.com/ardanlabs/conf/v3"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/lmittmann/tint"
+	"github.com/pgx-contrib/pgxotel"
 
 	"github.com/zorcal/sbgfit/backend/api"
 	"github.com/zorcal/sbgfit/backend/internal/core/exercise"
@@ -71,12 +72,15 @@ func run(ctx context.Context, cfg Config, log *slog.Logger) (retErr error) {
 		return fmt.Errorf("migrate database: %w", err)
 	}
 
-	poolConfig, err := pgxpool.ParseConfig(connStr)
+	poolCfg, err := pgxpool.ParseConfig(connStr)
 	if err != nil {
 		return fmt.Errorf("parse database pool config: %w", err)
 	}
+	poolCfg.ConnConfig.Tracer = &pgxotel.QueryTracer{
+		Name: "sbgfit-postgres",
+	}
 
-	pool, err := pgdb.NewPool(ctx, poolConfig)
+	pool, err := pgdb.NewPool(ctx, poolCfg)
 	if err != nil {
 		return fmt.Errorf("new database pool: %w", err)
 	}
