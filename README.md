@@ -42,7 +42,7 @@ cd ./backend && go install github.com/matryer/moq@latest
 
 The application includes distributed tracing via OpenTelemetry. To access the observability tools:
 
-1. **Start the observability stack**: `cd infra && docker compose up -d`
+1. **Start the observability stack**: `make up`
 2. **Access Grafana**: Open http://localhost:3000
    - **Username**: `admin`
    - **Password**: `admin`
