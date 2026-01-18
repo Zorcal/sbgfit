@@ -26,6 +26,14 @@ type Config struct {
 		Port       int    `conf:"default:5433"`
 		Name       string `conf:"default:sbgfit"`
 		SSLEnabled bool   `conf:"default:false"`
+		Pool       struct {
+			MaxConns              int
+			MinConns              int
+			MaxConnLifetime       time.Duration `conf:"default:1h"`
+			MaxConnIdleTime       time.Duration `conf:"default:30m"`
+			HealthCheckPeriod     time.Duration `conf:"default:60s"`
+			MaxConnLifetimeJitter time.Duration `conf:"default:0s"`
+		}
 	}
 	Telemetry struct {
 		Enabled  bool   `conf:"default:true"`
@@ -53,6 +61,14 @@ func (c Config) LogValue() slog.Value {
 			slog.Int("port", c.DB.Port),
 			slog.String("name", c.DB.Name),
 			slog.Bool("ssl_enabled", c.DB.SSLEnabled),
+			slog.Group("pool",
+				slog.Int("max_conns", c.DB.Pool.MaxConns),
+				slog.Int("min_conns", c.DB.Pool.MinConns),
+				slog.Duration("max_conn_lifetime", c.DB.Pool.MaxConnLifetime),
+				slog.Duration("max_conn_idle_time", c.DB.Pool.MaxConnIdleTime),
+				slog.Duration("health_check_period", c.DB.Pool.HealthCheckPeriod),
+				slog.Duration("max_conn_lifetime_jitter", c.DB.Pool.MaxConnLifetimeJitter),
+			),
 		),
 		slog.Group("telemetry",
 			slog.Bool("enabled", c.Telemetry.Enabled),

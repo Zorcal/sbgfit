@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 
 	"github.com/ardanlabs/conf/v3"
@@ -66,13 +68,38 @@ func run(ctx context.Context, cfg Config, log *slog.Logger) (retErr error) {
 	}
 	defer cleanupTracing()
 
-	connStr := pgdb.ConnStr(cfg.DB.Host, cfg.DB.Port, cfg.DB.User, cfg.DB.Password, cfg.DB.Name, cfg.DB.SSLEnabled)
+	dbConnStr := pgdb.ConnStr(cfg.DB.Host, cfg.DB.Port, cfg.DB.User, cfg.DB.Password, cfg.DB.Name, cfg.DB.SSLEnabled)
 
-	if err := schema.Migrate(ctx, connStr); err != nil {
+	if err := schema.Migrate(ctx, dbConnStr); err != nil {
 		return fmt.Errorf("migrate database: %w", err)
 	}
 
-	poolCfg, err := pgxpool.ParseConfig(connStr)
+	poolQueryParams := url.Values{}
+	if cfg.DB.Pool.MaxConns > 0 {
+		poolQueryParams.Set("pool_max_conns", strconv.Itoa(cfg.DB.Pool.MaxConns))
+	}
+	if cfg.DB.Pool.MinConns > 0 {
+		poolQueryParams.Set("pool_min_conns", strconv.Itoa(cfg.DB.Pool.MinConns))
+	}
+	if cfg.DB.Pool.MaxConnLifetime > 0 {
+		poolQueryParams.Set("pool_max_conn_lifetime", cfg.DB.Pool.MaxConnLifetime.String())
+	}
+	if cfg.DB.Pool.MaxConnIdleTime > 0 {
+		poolQueryParams.Set("pool_max_conn_idle_time", cfg.DB.Pool.MaxConnIdleTime.String())
+	}
+	if cfg.DB.Pool.HealthCheckPeriod > 0 {
+		poolQueryParams.Set("pool_health_check_period", cfg.DB.Pool.HealthCheckPeriod.String())
+	}
+	if cfg.DB.Pool.MaxConnLifetimeJitter > 0 {
+		poolQueryParams.Set("pool_max_conn_lifetime_jitter", cfg.DB.Pool.MaxConnLifetimeJitter.String())
+	}
+
+	poolConnstr, err := mergeURLQueryParams(dbConnStr, poolQueryParams)
+	if err != nil {
+		return fmt.Errorf("merge pool query params with db connstr: %w", err)
+	}
+
+	poolCfg, err := pgxpool.ParseConfig(poolConnstr)
 	if err != nil {
 		return fmt.Errorf("parse database pool config: %w", err)
 	}
@@ -157,4 +184,26 @@ func logHandler(env string) slog.Handler {
 	}
 	h = slogctx.NewHandler(h)
 	return h
+}
+
+func mergeURLQueryParams(rawURL string, newParams url.Values) (string, error) {
+	if len(newParams) == 0 {
+		return rawURL, nil
+	}
+
+	parsed, err := url.Parse(rawURL)
+	if err != nil {
+		return "", fmt.Errorf("parse raw URL: %w", err)
+	}
+
+	q := parsed.Query()
+	for key, values := range newParams {
+		for _, v := range values {
+			q.Set(key, v)
+		}
+	}
+
+	parsed.RawQuery = q.Encode()
+
+	return parsed.String(), nil
 }
