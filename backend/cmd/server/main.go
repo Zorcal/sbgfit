@@ -57,6 +57,8 @@ func main() {
 func run(ctx context.Context, cfg Config, log *slog.Logger) (retErr error) {
 	log.InfoContext(ctx, "Starting...", "config", cfg)
 
+	// Setup open telemetry.
+
 	telemetryConfig := telemetry.Config{
 		Enabled:  cfg.Telemetry.Enabled,
 		Endpoint: cfg.Telemetry.Endpoint,
@@ -68,11 +70,15 @@ func run(ctx context.Context, cfg Config, log *slog.Logger) (retErr error) {
 	}
 	defer cleanupTracing()
 
+	// Migrate database.
+
 	dbConnStr := pgdb.ConnStr(cfg.DB.Host, cfg.DB.Port, cfg.DB.User, cfg.DB.Password, cfg.DB.Name, cfg.DB.SSLEnabled)
 
 	if err := schema.Migrate(ctx, dbConnStr); err != nil {
 		return fmt.Errorf("migrate database: %w", err)
 	}
+
+	// Setup database connection pool.
 
 	poolQueryParams := url.Values{}
 	if cfg.DB.Pool.MaxConns > 0 {
@@ -117,11 +123,17 @@ func run(ctx context.Context, cfg Config, log *slog.Logger) (retErr error) {
 		return fmt.Errorf("status check database connection: %w", err)
 	}
 
+	// Seed database.
+
 	if err := schema.SeedData(ctx, pool); err != nil {
 		return fmt.Errorf("seed database: %w", err)
 	}
 
+	// Setup services.
+
 	exerciseSvc := exercise.NewService(pool)
+
+	// Start HTTP server.
 
 	handler, err := api.NewHandler(api.Config{
 		Log:             log,
