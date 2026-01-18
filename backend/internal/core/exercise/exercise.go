@@ -8,10 +8,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/zorcal/sbgfit/backend/internal/core/mdl"
+	"github.com/zorcal/sbgfit/backend/internal/data/pgdb"
 	"github.com/zorcal/sbgfit/backend/internal/telemetry"
 )
 
@@ -38,22 +38,18 @@ func (s *Service) Exercises(ctx context.Context, fltr mdl.ExerciseFilter, pageSi
 
 	offset := (pageNumber - 1) * pageSize
 
-	exercisesQ, args := exercisesQuery(fltr, pageSize, offset)
+	exercisesQ := exercisesQuery(fltr, pageSize, offset)
 
-	rows, err := s.pool.Query(ctx, exercisesQ, args)
-	if err != nil {
-		return nil, 0, fmt.Errorf("query exercises: %w", err)
+	var result []dbExercisesResult
+	batchFunc := func(ctx context.Context, b *pgdb.Batch) error {
+		if err := exercisesQ.QueueMany(ctx, b, &result); err != nil {
+			return fmt.Errorf("exercises query: %w", err)
+		}
+		return nil
 	}
-	defer rows.Close()
 
-	type Result struct {
-		dbExercise
-
-		TotalCount int `db:"total_count"`
-	}
-	result, err := pgx.CollectRows(rows, pgx.RowToStructByName[Result])
-	if err != nil {
-		return nil, 0, fmt.Errorf("collect exercise rows: %w", err)
+	if err := pgdb.RunBatch(ctx, s.pool, batchFunc); err != nil {
+		return nil, 0, fmt.Errorf("run batch: %w", err)
 	}
 
 	if len(result) > 0 {

@@ -6,9 +6,10 @@ import (
 	"github.com/jackc/pgx/v5"
 
 	"github.com/zorcal/sbgfit/backend/internal/core/mdl"
+	"github.com/zorcal/sbgfit/backend/internal/data/pgdb"
 )
 
-func exercisesQuery(fltr mdl.ExerciseFilter, limit, offset int) (string, pgx.NamedArgs) {
+func exercisesQuery(fltr mdl.ExerciseFilter, limit, offset int) pgdb.TypedQuery[dbExercisesResult] {
 	var q strings.Builder
 
 	q.WriteString(`
@@ -50,43 +51,41 @@ func exercisesQuery(fltr mdl.ExerciseFilter, limit, offset int) (string, pgx.Nam
 	args := make(pgx.NamedArgs)
 
 	var predicates []string
-
 	if fltr.Name != nil {
 		predicates = append(predicates, "exercise_data.name ILIKE @name")
 		args["name"] = "%" + *fltr.Name + "%"
 	}
-
 	if fltr.Category != nil {
 		predicates = append(predicates, "exercise_data.category_code = @category")
 		args["category"] = *fltr.Category
 	}
-
 	if len(fltr.EquipmentTypes) > 0 {
 		predicates = append(predicates, "exercise_data.equipment_types && @equipmentTypes")
 		args["equipmentTypes"] = fltr.EquipmentTypes
 	}
-
 	if len(fltr.PrimaryMuscles) > 0 {
 		predicates = append(predicates, "exercise_data.primary_muscles && @primaryMuscles")
 		args["primaryMuscles"] = fltr.PrimaryMuscles
 	}
-
 	if len(fltr.Tags) > 0 {
 		predicates = append(predicates, "exercise_data.tags && @tags")
 		args["tags"] = fltr.Tags
 	}
-
 	if len(predicates) > 0 {
 		q.WriteString(" WHERE ")
 		q.WriteString(strings.Join(predicates, " AND "))
 	}
 
+	args["limit"] = limit
+	args["offset"] = offset
 	q.WriteString(`
 		ORDER BY name COLLATE natsort
 		LIMIT @limit OFFSET @offset`)
 
-	args["limit"] = limit
-	args["offset"] = offset
-
-	return q.String(), args
+	return pgdb.TypedQuery[dbExercisesResult]{
+		SQL:    q.String(),
+		Args:   args,
+		Scan:   pgx.RowToStructByName[dbExercisesResult],
+		Expect: pgdb.ExpectMany,
+	}
 }

@@ -8,6 +8,12 @@ import (
 	"github.com/zorcal/sbgfit/backend/internal/core/mdl"
 )
 
+type dbExercisesResult struct {
+	dbExercise
+
+	TotalCount int `db:"total_count"`
+}
+
 type dbExercise struct {
 	ExternalID     uuid.UUID `db:"external_id"`
 	Name           string    `db:"name"`
