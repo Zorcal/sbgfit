@@ -145,6 +145,8 @@ linters:
         - "github.com/zorcal/sbgfit/backend/api/internal/openapi.*"
         # Allow OpenTelemetry interfaces
         - "go.opentelemetry.io/otel/trace.*"
+        # Allow pgx interfaces
+        - "github.com/jackc/pgx/v5.*"
     wrapcheck:
       ignore-sigs:
         - fmt.Errorf

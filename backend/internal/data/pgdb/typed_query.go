@@ -4,8 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/jackc/pgx/v5"
+	"go.opentelemetry.io/otel/attribute"
 
 	"github.com/zorcal/sbgfit/backend/internal/telemetry"
 )
@@ -44,6 +46,8 @@ func (q TypedQuery[T]) Queue(ctx context.Context, b *Batch, dst *T) error {
 	_, span := telemetry.StartSpan(ctx, "pgdb.TypedQuery.Queue")
 	defer span.End()
 
+	span.SetAttributes(attribute.String("query", fmtQuery(q.SQL)))
+
 	if q.Expect != ExpectOne {
 		return fmt.Errorf("TypedQuery.Queue called with Expect=%d, but ExpectOne (%d) is required", q.Expect, ExpectOne)
 	}
@@ -70,6 +74,8 @@ func (q TypedQuery[T]) QueueMany(ctx context.Context, b *Batch, dst *[]T) error 
 	_, span := telemetry.StartSpan(ctx, "pgdb.TypedQuery.QueueMany")
 	defer span.End()
 
+	span.SetAttributes(attribute.String("query", fmtQuery(q.SQL)))
+
 	if q.Expect != ExpectMany {
 		return fmt.Errorf("TypedQuery.QueueMany called with Expect=%d, but ExpectMany (%d) is required", q.Expect, ExpectMany)
 	}
@@ -95,4 +101,14 @@ func flattenArgs(args any) []any {
 	default:
 		return []any{v}
 	}
+}
+
+func fmtQuery(q string) string {
+	r := strings.NewReplacer(
+		"\t", "",
+		"\n", " ",
+		"( ", "(",
+		") ", ")",
+	)
+	return strings.Trim(r.Replace(q), " ")
 }
